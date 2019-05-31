@@ -182,7 +182,7 @@ var IncentiviserOverview = React.createClass({
   getInitialState : function() {
     // TODO somehow determine this from the market - hardcoding as the
     // UI is developed:
-    var jstf = 16;
+    var jstf = 20;
     return {
       viewedBounty : {
         bounty : 0,
@@ -196,42 +196,7 @@ var IncentiviserOverview = React.createClass({
     }
   },
 
-  getBountyById : function(id) {
-    var vq = this.state.viewedBounty;
-    vq.bountyID = id;
-    incentiviser.bounties(vq.bountyID, (err, res) => {
-      if (err)
-        console.error(err)
-      else
-        vq.bounty = res
-    });
-    assessor.completed(vq.bountyID, (err, res) => {
-      if (err) {
-        console.error(err)
-      } else {
-        vq.completed = res[0];
-        if (res[0])
-          vq.completer = res[1];
-      }
-    });
-		assessor.viewBountyInfo(vq.bountyID, (err, res) => {
-			if (err) {
-				if(err.message.includes("not a base 16")) {
-					vq.bountyData = stringToBytes("No bounty set with this ID on this market");
-					vq.dataType = "string";
-					this.setState({viewedBounty:vq});
-				} else {
-					console.error(err);
-				}
-			} else {
-        vq.bountyData = res[0];
-        vq.dataType = res[1];
-        this.setState({viewedBounty:vq});
-      }
-		});
-  },
-
-  getBounty : function(event) {
+  displayBounty : function(event) {
     var vq = this.state.viewedBounty;
     vq.bountyID = event.currentTarget.id;
     incentiviser.bounties(vq.bountyID, (err, res) => {
@@ -266,8 +231,18 @@ var IncentiviserOverview = React.createClass({
 		});
   },
 
+  undisplayBounty : function() {
+    this.setState({viewedBounty:{
+      bounty : 0,
+      bountyID : -1,
+      bountyData : null,
+      completed : false,
+      completer : "0x"
+    }});
+  },
+
   getJob : function(id) {
-    var jobs = this.state.jobs
+    var jobs = this.state.jobs;
     var newJob = {
       id:id
     };
@@ -321,7 +296,7 @@ var IncentiviserOverview = React.createClass({
 
   mapJobs : function(job, key) {
     // TODO make these seem onclickable
-    return React.createElement("tr", {key:key, onClick:this.getBounty, id:job.id},
+    return React.createElement("tr", {key:key, onClick:this.displayBounty, id:job.id, title:"Click on a job to see its details or submit a claim"},
       React.createElement("td", {}, "" + job.id),
       React.createElement("td", {}, "" + job.bounty + " wei"),
       React.createElement("td", {}, "" + job.completed),
@@ -330,16 +305,15 @@ var IncentiviserOverview = React.createClass({
   },
 
   render : function() {
-    var header = React.createElement("div", {},
-      React.createElement("h3", {}, "Welcome to market: " + incentiviser.address),
+    var header = React.createElement("div", {onClick:this.undisplayBounty},
+      React.createElement("h3", {}, "Welcome to market: ", React.createElement("a", {href:"#"}, incentiviser.address)),
       React.createElement("hr", {})
     );
-    var moreJobsBtn = null;
-    if (this.state.jobsStillToFetch > 0) {
-      moreJobsBtn = React.createElement("button", {className:"btn btn-primary", onClick:this.fetchJobs}, "More jobs");
-    }
-    var jobFeed = React.createElement("div", {className:"job-feed col-5"},
-      React.createElement("table", {className:"job-feed-tbl table"},
+    var feedBody = null;
+    if (this.state.jobs.length == 0) {
+      feedBody = React.createElement("img", {src:"/img/loading.gif"});
+    } else {
+      feedBody = React.createElement("table", {className:"job-feed-tbl table"},
         React.createElement("tbody", {},
           React.createElement("tr", {},
             React.createElement("th", {}, "Key"),
@@ -349,24 +323,27 @@ var IncentiviserOverview = React.createClass({
           ),
           this.state.jobs.map(this.mapJobs)
         )
-      ), moreJobsBtn
-    );
-    if (this.state.viewedBounty.bountyID == -1)
-      return React.createElement("div", {className:"container-fluid"},
-				header,
-        React.createElement(BountyReviewPopup, {bounty:{dataType:"default"}}),
-        jobFeed
       );
+    }
+    var returnBtn = React.createElement("button", {onClick:this.undisplayBounty, className:"btn btn-info"}, "Return to Feed");
+    if (this.state.viewedBounty.bountyID == -1) {
+      return React.createElement("div", {className:"container-fluid", onMouseOver:this.fetchJobs},
+        header,
+        React.createElement("div", {className:"job-feed col-12"},
+          feedBody
+        )
+      );
+    }
     if (!this.state.viewedBounty.completed)
       return React.createElement("div", {className:"container-fluid"},
 				header,
 				React.createElement(BountySubmissionPopup, {bounty:this.state.viewedBounty}),
-        jobFeed
+        returnBtn
       );
     return React.createElement("div", {className:"container-fluid"},
 			header,
       React.createElement(BountyReviewPopup, {bounty:this.state.viewedBounty}),
-      jobFeed
+      returnBtn
     );
   }
 });
@@ -452,12 +429,12 @@ var BountySubmissionPopup = React.createClass({
 			bountyData = bytesToInt(this.props.bounty.bountyData);
 		}
 		if (bountyData == "No bounty set with this ID on this market")
-			return React.createElement("div", {className:"col-5 float-right"},
+			return React.createElement("div", {className:"col-12"},
 				React.createElement("p", {}, "Order id: " + this.props.bounty.bountyID),
 				React.createElement("p", {}, "Payment Available: " + this.props.bounty.bounty + " wei"),
 				React.createElement("p", {}, "Relevant data/instructions: " + bountyData)
 			);
-    return React.createElement("div", {className:"col-5 float-right"},
+    return React.createElement("div", {className:"col-12"},
       React.createElement("p", {}, "Order id: " + this.props.bounty.bountyID),
       React.createElement("p", {}, "Payment Available: " + this.props.bounty.bounty + " wei"),
       bountyInstructions,
@@ -533,7 +510,7 @@ var BountyReviewPopup = React.createClass({
   			bountyData = bytesToInt(this.props.bounty.bountyData);
   		bountyInstructions = React.createElement("p", {}, "Relevant data/instructions: " + bountyData);
   	}
-  	return React.createElement("div", {className:"col-5 float-right"},
+  	return React.createElement("div", {className:"col-12"},
   		React.createElement("p", {}, "Bounty id: " + this.props.bounty.bountyID),
   		React.createElement("p", {}, "Bounty Available: " + this.props.bounty.bounty + " wei"),
   		bountyInstructions,
