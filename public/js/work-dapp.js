@@ -175,7 +175,7 @@ var SupplierProfile = React.createClass({
 
 // A constant for how many jobs to query from the contract at once
 // TODO experiment with different vaks and find an ideal delay tradeoff.
-const jobsPerFetch = 5;
+const jobsPerFetch = 10;
 
 var IncentiviserOverview = React.createClass({
 
@@ -194,6 +194,10 @@ var IncentiviserOverview = React.createClass({
       jobs:[],
       jobsStillToFetch : jstf
     }
+  },
+
+  componentDidMount : function() {
+    this.fetchJobs();
   },
 
   displayBounty : function(event) {
