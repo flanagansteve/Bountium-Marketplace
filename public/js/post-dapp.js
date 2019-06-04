@@ -3,14 +3,9 @@
   // just a table of popular ones to choose from
 // TODO let a submitter set up a profile with their name + history. perhaps
 // set them up with a contract?
-// TODO change BountySubmissionPopup => IncompleteBountyView. Remove submission form
-// and replace it with actions to promote interest, ie: funding, sharing
-// TODO change BountyReviewPopup => AttemptedBountyView. Add buttons for approving
-// answer or sharing for voting or viewing evidence
-	// TODO how to do this while remaining implementation agnostic ??
-// TODO add CompletedBountyView to see history
 // TODO post-dapp and work-dapp should import the BountyReview/Submission react
 // classes from another file to keep them in sync
+// TODO let users drag pairs around to reorder them
 
 incentiviserABI = web3.eth.contract([{"constant":true,"inputs":[],"name":"oracle","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"bountyID","type":"uint256"}],"name":"settle","outputs":[{"name":"success","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"bountyID","type":"uint256"}],"name":"fund","outputs":[],"payable":true,"stateMutability":"payable","type":"function"},{"constant":true,"inputs":[{"name":"","type":"uint256"}],"name":"bounties","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"inputs":[{"name":"_oracle","type":"address"}],"payable":true,"stateMutability":"payable","type":"constructor"},{"payable":true,"stateMutability":"payable","type":"fallback"}]);
 
@@ -127,17 +122,16 @@ var Dashboard = React.createClass({
 
   render : function() {
     var br = React.createElement("br", {});
-    var prof = React.createElement(SupplierProfile, {}, this.props.children);
     // If an incentiviser has been selected
     if (this.state.incentAddr != "0x") {
-      return React.createElement("div", {}, prof,
+      return React.createElement("div", {},
         React.createElement("div", {className:""}, br,
           React.createElement(IncentiviserOverview, {dataType:this.state.marketDataType})
         )
       );
     }
-    return React.createElement("div", {}, prof,
-      React.createElement("div", {className:"col-6"},
+    return React.createElement("div", {},
+      React.createElement("div", {className:"col-12"},
         React.createElement("h3", {}, "Find a market for your job"),
         React.createElement("div", {},
           React.createElement("p", {}, "Example string market at: 0x450477fe993eb695f44027eda75652cd59f8cfc0"),
@@ -161,13 +155,6 @@ var Dashboard = React.createClass({
   }
 });
 
-// TODO
-var SupplierProfile = React.createClass({
-  render : function() {
-    return null;
-  }
-});
-
 var IncentiviserOverview = React.createClass({
 
   getInitialState : function() {
@@ -181,6 +168,16 @@ var IncentiviserOverview = React.createClass({
       },
       keyValPairs : []
     }
+  },
+
+  undisplayBounty : function() {
+    this.setState({viewedBounty:{
+      bounty : 0,
+      bountyID : -1,
+      bountyData : null,
+      completed : false,
+      completer : "0x"
+    }});
   },
 
   sendBounty : function() {
@@ -260,21 +257,41 @@ var IncentiviserOverview = React.createClass({
 		});
   },
 
-  addKeyValPair : function() {
-    var key = document.getElementById("bounty-key-input").value;
-    var val = document.getElementById("bounty-val-input").value;
+  pushKeyValPair : function(key, val) {
     var newPairsList = this.state.keyValPairs;
     newPairsList.push({key:key, val:val});
     this.setState({keyValPairs:newPairsList});
+  },
+
+  addKeyValPair : function() {
+    var key = document.getElementById("bounty-key-input").value;
+    var val = document.getElementById("bounty-val-input").value;
+    this.pushKeyValPair(key, val);
     document.getElementById("bounty-key-input").value = "";
     document.getElementById("bounty-val-input").value = "";
   },
 
+  editPair : function(e) {
+    document.getElementById("bounty-key-input").value = this.state.keyValPairs[e.target.id].key;
+    document.getElementById("bounty-val-input").value = this.state.keyValPairs[e.target.id].val;
+    var kvp = this.state.keyValPairs;
+    kvp.splice(e.target.id, 1);
+    this.setState({keyValPairs:kvp});
+  },
+
   renderKeyValPairs : function(pair, i) {
     return React.createElement("div", {key:i},
-      React.createElement("input", {className:"col-6", value:"Label: " + pair.key, disabled:true}),
-      React.createElement("input", {className:"col-6", value:"Data: " + pair.val, disabled:true})
+      React.createElement("input", {className:"col-5", value:"Label: " + pair.key, disabled:true}),
+      React.createElement("input", {className:"col-5", value:"Data: " + pair.val, disabled:true}),
+      React.createElement("button", {className:"btn btn-info", id:i, onClick:this.editPair}, "Edit"),
     );
+  },
+
+  softwareTemplate : function() {
+    this.pushKeyValPair("Due Date", "Click edit to specify");
+    this.pushKeyValPair("Language(s)", "Click edit to specify");
+    this.pushKeyValPair("Link to CI/CD API for Unit Tests", "Click edit to specify");
+    this.pushKeyValPair("Poster contact info", "Click edit to specify");
   },
 
   sendJSONBounty : function() {
@@ -296,26 +313,28 @@ var IncentiviserOverview = React.createClass({
         if(err)
           console.error(err);
         else {
-          alert("Your job posting is being processed. If you'd like to make sure it processed correctly, wait a bit and it will show up below.");
           var confirmSubmission = assessor.RequestReceived((err, res) => {
             if (err)
               console.error(err);
             else {
               if (res.args.sender == userAccount) {
-                alert("Success - review your bounty on the right.");
+                alert("Success - review your bounty below.");
                 this.getBountyById(res.args.bountyID);
               }
             }
           })
+          alert("Your job posting is being processed. If you'd like to make sure it processed correctly, wait a bit and it will show up below.");
         }
       }
     );
   },
 
   render : function() {
-		var header = React.createElement("h3", {}, "Welcome to market: " + incentiviser.address);
-		var br = React.createElement("br", {});
     var hr = React.createElement("hr", {});
+    var header = React.createElement("div", {onClick:this.undisplayBounty},
+      React.createElement("h3", {}, "Welcome to market: ", React.createElement("a", {href:"#"}, incentiviser.address)), hr
+    );
+		var br = React.createElement("br", {});
     var lookupForm = React.createElement("div", {className : "bounty-lookup-form"},
       React.createElement("h5", {}, "Search up a bounty you already posted to see its status"),
 			React.createElement("label", {for:"bounty-id-input"}, "Look a bounty up by its ID"),
@@ -348,6 +367,7 @@ var IncentiviserOverview = React.createClass({
       submissionForm = React.createElement("div", {className : "bounty-lookup-form"},
   			React.createElement("h5", {}, "Add pairs of labels & data to your heart's desire"),
   			React.createElement("p", {for:"bounty-info-input"}, "Workers will use this to accomplish your task"),
+        React.createElement("p", {}, React.createElement("a", {href:"#", onClick:this.softwareTemplate}, "Use our software outsourcing template to make your job even easier to complete!")),
         React.createElement("div", {className:"container-fluid", id:"key-val-input"},
           this.state.keyValPairs.map(this.renderKeyValPairs),
     			React.createElement("input", {type:"text", id:"bounty-key-input", className:"col-6", placeholder:"Instruction Parameter Label"}),
@@ -357,16 +377,16 @@ var IncentiviserOverview = React.createClass({
   			), br,
   			React.createElement("button", {onClick:this.sendJSONBounty, className:"btn btn-primary"}, "Post Job")
       );
-    var forms = React.createElement("div", {className:"col-6"}, submissionForm, hr, lookupForm)
+    var forms = React.createElement("div", {className:"col-12"}, submissionForm, hr, lookupForm);
     if (this.state.viewedBounty.bountyID == -1)
       return React.createElement("div", {className:"container-fluid"},
-				header, hr,
+				header,
 				forms
       );
     return React.createElement("div", {className:"container-fluid"},
-			header, hr,
+			header,
 			React.createElement(BountyReview, {bounty:this.state.viewedBounty}),
-			forms
+      React.createElement("button", {onClick:this.undisplayBounty, className:"btn btn-info float-right"}, "Post another job")
     );
   }
 });
@@ -384,6 +404,19 @@ var BountyReview = React.createClass({
 
   strToP : function(str, key) {
     return React.createElement("p", {key:key}, str);
+  },
+
+  fund : function() {
+    incentiviser.fund.sendTransaction(
+      this.props.bounty.bountyID,
+      {from:userAccount, value : web3.toWei(document.getElementById("wei-to-send").value, 'ether')},
+      (err, res) => {
+      if(err)
+        console.error(err);
+      else {
+        alert("Your funding is being sent. If you'd like, wait for the transaction to confirm in your wallet and refresh the page to see the new bounty balance");
+      }
+    });
   },
 
   render : function() {
@@ -435,13 +468,13 @@ var BountyReview = React.createClass({
 			bountyData = bytesToInt(this.props.bounty.bountyData);
 		}
 		if (bountyData == "No bounty set with this ID on this market")
-			return React.createElement("div", {className:"col-6 float-right"},
+			return React.createElement("div", {className:"col-12"},
 				React.createElement("p", {}, "Order id: " + this.props.bounty.bountyID),
 				React.createElement("p", {}, "Payment Available: " + this.props.bounty.bounty + " wei"),
 				React.createElement("p", {}, "Relevant data/instructions: " + bountyData)
 			);
     if (this.props.bounty.completed) {
-      return React.createElement("div", {className:"col-6 float-right"},
+      return React.createElement("div", {className:"col-12"},
     		React.createElement("p", {}, "Bounty id: " + this.props.bounty.bountyID),
     		React.createElement("p", {}, "Bounty Available: " + this.props.bounty.bounty + " wei"),
     		bountyInstructions,
@@ -449,11 +482,15 @@ var BountyReview = React.createClass({
     		React.createElement("button", {onClick:this.settle, className:"btn btn-primary"}, "Pay out")
     	);
     }
-    return React.createElement("div", {className:"col-6 float-right"},
+    return React.createElement("div", {className:"col-12"},
       React.createElement("p", {}, "Order id: " + this.props.bounty.bountyID),
       React.createElement("p", {}, "Payment Available: " + this.props.bounty.bounty + " wei"),
       bountyInstructions,
       React.createElement("p", {}, "Completed: No"),
+      React.createElement("legend", {}, "Fund this bounty to hasten its completion"),
+      React.createElement("p", {}, "Amount to send, in Ether"),
+      React.createElement("input", {id:"wei-to-send"}),
+      React.createElement("button", {className:"btn btn-primary", onClick:this.fund}, "Fund")
     );
   }
 });

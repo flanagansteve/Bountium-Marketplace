@@ -182,7 +182,7 @@ var IncentiviserOverview = React.createClass({
   getInitialState : function() {
     // TODO somehow determine this from the market - hardcoding as the
     // UI is developed:
-    var jstf = 20;
+    var jstf = 40;
     return {
       viewedBounty : {
         bounty : 0,
@@ -207,7 +207,7 @@ var IncentiviserOverview = React.createClass({
       if (err)
         console.error(err)
       else
-        vq.bounty = res
+        vq.bounty = res.c[0]
     });
     assessor.completed(vq.bountyID, (err, res) => {
       if (err) {
@@ -255,7 +255,7 @@ var IncentiviserOverview = React.createClass({
         console.error(err);
         return;
       } else {
-        newJob.bounty = res[0];
+        newJob.bounty = res.c[0];
       }
     });
     assessor.completed(id, (err, res) => {
