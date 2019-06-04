@@ -138,14 +138,14 @@ var Dashboard = React.createClass({
           React.createElement("p", {}, "Example json market at: 0xe748d6628cb4f0e87c48509b227b82f831411733"),
           React.createElement("label", {for:"incentiviser-addr-input"}, "Look market up by address"),
           br,
-          React.createElement("input", {type:"text", className:"form-control", id:"incentiviser-addr-input", placeholder:"0x123..."}),
+          React.createElement("input", {type:"text", className:"form-control col-6", id:"incentiviser-addr-input", placeholder:"0x123..."}),
           br,
           React.createElement("button", {onClick:this.setIncentAddr, className:"btn btn-primary"}, "Lookup market")
         ), br,
         React.createElement("div", {className:"incentiviser-search-form"},
           React.createElement("label", {for:"incentiviser-keyword-input"}, "Look market up by keyword"),
           br,
-          React.createElement("input", {type:"text", className:"form-control", id:"incentiviser-keyword-input", placeholder:"ie, \"Delivery\""}),
+          React.createElement("input", {type:"text", className:"form-control col-6", id:"incentiviser-keyword-input", placeholder:"ie, \"Delivery\""}),
           br,
           React.createElement("button", {onClick:this.lookupIncentByKeyword, className:"btn btn-primary"}, "Lookup market")
         )
