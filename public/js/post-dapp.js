@@ -1,7 +1,6 @@
-// TODO catch invalid address errors and suggest:
-  // Is the user on the right network (ropsten vs mainnet)?
-  // did the user include 0x in the address?
-  // Did they mis type the address?
+// TODO render the debuggingInvalidAddress when we get error: invalid address
+  // The element is ready, the issue is actually figuring out what web3 call
+  // is causing that error...
 // TODO incorporate registrar
   // for keyword search
   // just a table of popular ones to choose from
@@ -20,6 +19,23 @@ assessor = null;
 
 liveMarketAddr = "0xfce2e8c52578026ddaa24899921586591bb73fca";
 testMarketAddr = "0xe748d6628cb4f0e87c48509b227b82f831411733";
+
+// Is the user on the right network (ropsten vs mainnet)?
+// did the user include 0x in the address?
+// Did they mis type the address?
+var debuggingInvalidAddress =
+  React.createElement("div", {},
+    React.createElement("p", {}, "Uh oh! We couldn't communicate with that smart contract address from your web3 client. It may be a couple things:"),
+    React.createElement("ul", {},
+      React.createElement("li", {}, "Are you on the correct network? If you're trying to use the example market, you must be on Ropsten - click on Metamask to switch. If you're trying to use the live market, you must be on the main network."),
+      React.createElement("li", {}, "Did you include the initial 0x of the market's address, type in the whole address, and type it correctly? You typed in: "),// + incentiviser.address),
+      React.createElement("li", {}, "Are you sure the address you used points to a market contract, and not some other contract or another Ethereum user?")
+    ),
+    React.createElement("p", {}, "If none of these help, please, ",
+      React.createElement("a", {href:"https://gitlab.com/bountium/bountium-t-shirts/issues/new"}, "report this issue"),
+    " and we will get back to you as soon as possible."
+    )
+  );
 
 window.addEventListener('load', async () => {
   // check for metamask
@@ -50,33 +66,58 @@ function updateInterface() {
 		// presuming its a valid incent addr... TODO
 		incentiviser = incentiviserABI.at(addr.substring(addr.indexOf("market=") + "market=".length, addr.indexOf("market=") + "market=".length + 42));
     incentiviser.oracle((err, res) => {
-      if (err)
-        console.error(err)
-      assessor = assessorABI.at(res);
-      assessor.viewBountyInfo(0, (err, res) => {
-        if (!err) {
-    			ReactDOM.render(
-    	      React.createElement(Dashboard,
-              {
-                incentAddr:incentiviser.address,
-                dataType:res[1]
-              }, userAccount
+      if (err) {
+        if (err.message.include("invalid address")) {
+          // most likely causes:
+            // Is the user on the right network (ropsten vs mainnet)?
+            // did the user include 0x in the address?
+            // Did they mis type the address?
+          // TODO we can probably dynamically look at error #2 and ensure they included the 0x
+          ReactDOM.render(
+            ReactDOM.createElement("div", {},
+              React.createElement("p", {}, "Uh oh! We couldn't communicate with that smart contract address from your web3 client. It may be a couple things:"),
+              React.createElement("ul", {},
+                React.createElement("li", {}, "Are you on the correct network? If you're trying to use the example market, you must be on Ropsten - click on Metamask to switch. If you're trying to use the live market, you must be on the main network."),
+                React.createElement("li", {}, "Did you include the initial 0x of the market's address, type in the whole address, and type it correctly? You typed in: " + incentiviser.address),
+                React.createElement("li", {}, "Are you sure " + incentiviser.address + " points to a market contract, and not some other contract or another Ethereum user?")
+              ),
+              React.createElement("p", {}, "If none of these help, please, ",
+                React.createElement("a", {href:"https://gitlab.com/bountium/bountium-t-shirts/issues/new"}, "report this issue"),
+              " and we will get back to you as soon as possible."
+              )
             ),
-    	      document.getElementById("dashboard")
-    	    );
+            document.getElementById("dashboard")
+          );
         } else {
-          // No bounties have been set for this market. TODO how, then, do we get
-          // its data type? Just presuming a string for now...
-          if (err.message.includes("not a base 16")) {
-            ReactDOM.render(
-      	      React.createElement(Dashboard, {incentAddr:incentiviser.address}, userAccount),
+          console.error(err);
+        }
+      } else {
+        assessor = assessorABI.at(res);
+        assessor.viewBountyInfo(0, (err, res) => {
+          if (!err) {
+      			ReactDOM.render(
+      	      React.createElement(Dashboard,
+                {
+                  incentAddr:incentiviser.address,
+                  dataType:res[1]
+                }, userAccount
+              ),
       	      document.getElementById("dashboard")
       	    );
           } else {
-            console.error(err);
+            // No bounties have been set for this market. TODO how, then, do we get
+            // its data type? Just presuming a string for now...
+            if (err.message.includes("not a base 16")) {
+              ReactDOM.render(
+        	      React.createElement(Dashboard, {incentAddr:incentiviser.address}, userAccount),
+        	      document.getElementById("dashboard")
+        	    );
+            } else {
+              console.error(err);
+            }
           }
-        }
-      });
+        });
+      }
     });
   } else {
     ReactDOM.render(
@@ -291,8 +332,8 @@ var IncentiviserOverview = React.createClass({
 
   renderKeyValPairs : function(pair, i) {
     return React.createElement("div", {key:i},
-      React.createElement("input", {className:"col-5", value:"Label: " + pair.key, disabled:true}),
-      React.createElement("input", {className:"col-5", value:"Data: " + pair.val, disabled:true}),
+      React.createElement("input", {className:"col-10 col-lg-5", value:"Label: " + pair.key, disabled:true}),
+      React.createElement("input", {className:"col-10 col-lg-5 mb-3 mb-lg-0", value:"Data: " + pair.val, disabled:true}),
       React.createElement("button", {className:"btn btn-info", id:i, onClick:this.editPair}, "Edit"),
     );
   },
