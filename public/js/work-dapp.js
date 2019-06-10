@@ -1,3 +1,7 @@
+// TODO catch invalid address errors and suggest:
+  // Is the user on the right network (ropsten vs mainnet)?
+  // did the user include 0x in the address?
+  // Did they mis type the address?
 // TODO incorporate registrar
   // for keyword search
   // just a table of popular ones to choose from
@@ -18,6 +22,9 @@ assessorABI = web3.eth.contract([{"constant": true,"inputs": [{"name": "bountyID
 
 incentiviser = null;
 assessor = null;
+
+liveMarketAddr = "0xfce2e8c52578026ddaa24899921586591bb73fca";
+testMarketAddr = "0xe748d6628cb4f0e87c48509b227b82f831411733";
 
 window.addEventListener('load', async () => {
   // check for metamask
@@ -144,8 +151,12 @@ var Dashboard = React.createClass({
       React.createElement("div", {className:"col-12"},
         React.createElement("h3", {}, "Find a market for your job"),
         React.createElement("div", {},
-          React.createElement("p", {}, "Example string market on Ropsten at: 0x450477fe993eb695f44027eda75652cd59f8cfc0"),
-          React.createElement("p", {}, "Example json market on Ropsten at: 0xe748d6628cb4f0e87c48509b227b82f831411733"),
+          React.createElement("p", {}, "Example market on Ropsten at: ",
+            React.createElement("a", {href:"/work.html?market=" + testMarketAddr}, testMarketAddr)
+          ),
+          React.createElement("p", {}, "Suggested main market on Mainnet at: ",
+            React.createElement("a", {href:"/work.html?market=" + liveMarketAddr}, liveMarketAddr)
+          ),
           React.createElement("label", {for:"incentiviser-addr-input"}, "Look market up by address"),
           br,
           React.createElement("input", {type:"text", className:"form-control col-6", id:"incentiviser-addr-input", placeholder:"0x123..."}),
@@ -181,7 +192,7 @@ var IncentiviserOverview = React.createClass({
   getInitialState : function() {
     // TODO somehow determine this from the market - hardcoding as the
     // UI is developed:
-    var jstf = 40;
+    var jstf = 30;
     return {
       viewedBounty : {
         bounty : 0,
@@ -308,9 +319,24 @@ var IncentiviserOverview = React.createClass({
   },
 
   render : function() {
-    var header = React.createElement("div", {onClick:this.undisplayBounty},
-      React.createElement("h3", {}, "Welcome to market: ", React.createElement("a", {href:"#"}, incentiviser.address)),
-      React.createElement("hr", {})
+    var mainMarket = incentiviser.address == liveMarketAddr;
+    var testMarket = incentiviser.address == testMarketAddr;
+    var hr = React.createElement("hr", {});
+    var headerText = React.createElement("h3", {onClick:this.undisplayBounty}, "Welcome to market: ", React.createElement("a", {href:"#"}, "Custom Market"));
+    if (mainMarket) {
+      headerText = React.createElement("h3", {onClick:this.undisplayBounty}, "Welcome to market: ", React.createElement("a", {href:"#"}, "The Live Market"));
+    } else if (testMarket) {
+      headerText = React.createElement("h3", {onClick:this.undisplayBounty}, "Welcome to market: ", React.createElement("a", {href:"#"}, "The Test Market"));
+    }
+    var header = React.createElement("div", {},
+      React.createElement("div", {className:"nav navbar-collapse mx-auto"},
+        headerText,
+        React.createElement("br", {className:"d-md-none"}),
+        React.createElement("a", {className:"btn btn-secondary float-right nav-item ml-auto", href:"/work.html"}, "Search for Custom Market"),
+        (!testMarket && React.createElement("a", {className:"btn btn-primary float-right nav-item", href:"/work.html?market=" + testMarketAddr}, "Go to Test Market")),
+        (!mainMarket && React.createElement("a", {className:"btn btn-info float-right nav-item", href:"/work.html?market=" + liveMarketAddr}, "Go to Live Market"))
+      ),
+      hr
     );
     var feedBody = null;
     if (this.state.jobs.length == 0) {
