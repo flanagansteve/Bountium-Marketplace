@@ -287,10 +287,9 @@ var IncentiviserOverview = React.createClass({
     );
   },
 
-  softwareTemplate : function() {
+  shirtTemplate : function() {
     this.pushKeyValPair("Due Date", "Click edit to specify");
-    this.pushKeyValPair("Language(s)", "Click edit to specify");
-    this.pushKeyValPair("Link to CI/CD API for Unit Tests", "Click edit to specify");
+    // TODO more details - see your email exchange with QRSTs
     this.pushKeyValPair("Poster contact info", "Click edit to specify");
   },
 
@@ -367,7 +366,7 @@ var IncentiviserOverview = React.createClass({
       submissionForm = React.createElement("div", {className : "bounty-lookup-form"},
   			React.createElement("h5", {}, "Add pairs of labels & data to your heart's desire"),
   			React.createElement("p", {for:"bounty-info-input"}, "Workers will use this to accomplish your task"),
-        React.createElement("p", {}, React.createElement("a", {href:"#", onClick:this.softwareTemplate}, "Use our software outsourcing template to make your job even easier to complete!")),
+        React.createElement("p", {}, React.createElement("a", {href:"#", onClick:this.shirtTemplate}, "Use our printing order template to make your request even easier to complete!")),
         React.createElement("div", {className:"container-fluid", id:"key-val-input"},
           this.state.keyValPairs.map(this.renderKeyValPairs),
     			React.createElement("input", {type:"text", id:"bounty-key-input", className:"col-6", placeholder:"Instruction Parameter Label"}),
