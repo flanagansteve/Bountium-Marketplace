@@ -132,31 +132,30 @@ var Dashboard = React.createClass({
 
   render : function() {
     var br = React.createElement("br", {});
-    var prof = React.createElement(SupplierProfile, {}, this.props.children);
     // If an incentiviser has been selected
     if (this.state.incentAddr != "0x") {
-      return React.createElement("div", {}, prof,
+      return React.createElement("div", {},
         React.createElement("div", {className:""}, br,
           React.createElement(IncentiviserOverview, {dataType:this.state.marketDataType})
         )
       );
     }
-    return React.createElement("div", {}, prof,
-      React.createElement("div", {className:"col-6"},
-        React.createElement("h3", {}, "Find a market and get to work!"),
+    return React.createElement("div", {},
+      React.createElement("div", {className:"col-12"},
+        React.createElement("h3", {}, "Find a market for your job"),
         React.createElement("div", {},
           React.createElement("p", {}, "Example string market on Ropsten at: 0x450477fe993eb695f44027eda75652cd59f8cfc0"),
           React.createElement("p", {}, "Example json market on Ropsten at: 0xe748d6628cb4f0e87c48509b227b82f831411733"),
           React.createElement("label", {for:"incentiviser-addr-input"}, "Look market up by address"),
           br,
-          React.createElement("input", {type:"text", className:"form-control", id:"incentiviser-addr-input", placeholder:"0x123..."}),
+          React.createElement("input", {type:"text", className:"form-control col-6", id:"incentiviser-addr-input", placeholder:"0x123..."}),
           br,
           React.createElement("button", {onClick:this.setIncentAddr, className:"btn btn-primary"}, "Lookup market")
         ), br,
         React.createElement("div", {className:"incentiviser-search-form"},
           React.createElement("label", {for:"incentiviser-keyword-input"}, "Look market up by keyword"),
           br,
-          React.createElement("input", {type:"text", className:"form-control", id:"incentiviser-keyword-input", placeholder:"ie, \"Delivery\""}),
+          React.createElement("input", {type:"text", className:"form-control col-6", id:"incentiviser-keyword-input", placeholder:"ie, \"Delivery\""}),
           br,
           React.createElement("button", {onClick:this.lookupIncentByKeyword, className:"btn btn-primary"}, "Lookup market")
         )
