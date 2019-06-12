@@ -8,8 +8,8 @@ window.addEventListener('load', async () => {
       React.createElement("p", {}, "The Bountium T Shirt Printing Marketplace uses smart contracts to make sure all jobs are processed fairly and automatically. To use these, you'll need to install ",
       React.createElement("a", {href : "https://metamask.io"}, "Metamask.")),
       React.createElement("p", {}, "To use the example marketplaces, set Metamask to the Ropsten test network."),
-      React.createElement("a", {className:"btn btn-primary", href:"/post.html"}, "Post an Order"),
-      React.createElement("a", {className:"btn btn-info float-right", href:"/work.html"}, "Fulfill Orders"),
+      React.createElement("a", {className:"btn btn-primary", href:"./post.html"}, "Post an Order"),
+      React.createElement("a", {className:"btn btn-info float-right", href:"./work.html"}, "Fulfill Orders"),
     ),
     document.getElementById("dashboard")
   );
