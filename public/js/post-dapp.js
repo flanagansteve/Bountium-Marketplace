@@ -59,6 +59,8 @@ window.addEventListener('load', async () => {
   }
 });
 
+// TODO the process of setting the incentiviser var, then assessor, then rendering
+// dashboard and handling errors should probably go in its own fucntion
 function updateInterface() {
 	document.getElementById("workflow-container").innerHTML = "";
   var addr = location.search;
@@ -120,10 +122,62 @@ function updateInterface() {
       }
     });
   } else {
-    ReactDOM.render(
-      React.createElement(Dashboard, {incentAddr:"0x"}, userAccount),
-      document.getElementById("dashboard")
-    );
+    // Go to live market by default
+    incentiviser = incentiviserABI.at(liveMarketAddr);
+    incentiviser.oracle((err, res) => {
+      if (err) {
+        if (err.message.include("invalid address")) {
+          // most likely causes:
+            // Is the user on the right network (ropsten vs mainnet)?
+            // did the user include 0x in the address?
+            // Did they mis type the address?
+          // TODO we can probably dynamically look at error #2 and ensure they included the 0x
+          ReactDOM.render(
+            ReactDOM.createElement("div", {},
+              React.createElement("p", {}, "Uh oh! We couldn't communicate with that smart contract address from your web3 client. It may be a couple things:"),
+              React.createElement("ul", {},
+                React.createElement("li", {}, "Are you on the correct network? If you're trying to use the example market, you must be on Ropsten - click on Metamask to switch. If you're trying to use the live market, you must be on the main network."),
+                React.createElement("li", {}, "Did you include the initial 0x of the market's address, type in the whole address, and type it correctly? You typed in: " + incentiviser.address),
+                React.createElement("li", {}, "Are you sure " + incentiviser.address + " points to a market contract, and not some other contract or another Ethereum user?")
+              ),
+              React.createElement("p", {}, "If none of these help, please, ",
+                React.createElement("a", {href:"https://gitlab.com/bountium/bountium-t-shirts/issues/new"}, "report this issue"),
+              " and we will get back to you as soon as possible."
+              )
+            ),
+            document.getElementById("dashboard")
+          );
+        } else {
+          console.error(err);
+        }
+      } else {
+        assessor = assessorABI.at(res);
+        assessor.viewBountyInfo(0, (err, res) => {
+          if (!err) {
+      			ReactDOM.render(
+      	      React.createElement(Dashboard,
+                {
+                  incentAddr:incentiviser.address,
+                  dataType:res[1]
+                }, userAccount
+              ),
+      	      document.getElementById("dashboard")
+      	    );
+          } else {
+            // No bounties have been set for this market. TODO how, then, do we get
+            // its data type? Just presuming a string for now...
+            if (err.message.includes("not a base 16")) {
+              ReactDOM.render(
+        	      React.createElement(Dashboard, {incentAddr:incentiviser.address}, userAccount),
+        	      document.getElementById("dashboard")
+        	    );
+            } else {
+              console.error(err);
+            }
+          }
+        });
+      }
+    });
   }
 }
 
