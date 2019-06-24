@@ -388,11 +388,12 @@ var IncentiviserOverview = React.createClass({
     return React.createElement("div", {key:i},
       React.createElement("input", {className:"col-10 col-lg-5", value:"Label: " + pair.key, disabled:true}),
       React.createElement("input", {className:"col-10 col-lg-5 mb-3 mb-lg-0", value:"Data: " + pair.val, disabled:true}),
-      React.createElement("button", {className:"btn btn-info", id:i, onClick:this.editPair}, "Edit"),
+      React.createElement("button", {className:"btn btn-info ml-2", id:i, onClick:this.editPair}, "Edit"),
     );
   },
 
   shirtTemplate : function() {
+    this.pushKeyValPair("Category", "T Shirt Printing");
     this.pushKeyValPair("Artwork (on transparent background)", "Click edit to specify");
     this.pushKeyValPair("Image of desired shirt", "Click edit to specify");
     this.pushKeyValPair("Artwork dimensions", "Click edit to specify");
@@ -464,7 +465,7 @@ var IncentiviserOverview = React.createClass({
       React.createElement("h5", {}, "Search up a bounty you already posted to see its status"),
 			React.createElement("label", {for:"bounty-id-input"}, "Look a bounty up by its ID"),
 			br,
-			React.createElement("input", {type:"number", id:"bounty-id-input", className:"form-control"}),
+			React.createElement("input", {type:"number", id:"bounty-id-input", className:"form-control col-10"}),
 			br,
 			React.createElement("button", {onClick:this.getBounty, className:"btn btn-primary"}, "Look up")
 		);
@@ -492,11 +493,11 @@ var IncentiviserOverview = React.createClass({
       submissionForm = React.createElement("div", {className : "bounty-lookup-form"},
   			React.createElement("h5", {}, "Add pairs of labels & data to your heart's desire"),
   			React.createElement("p", {for:"bounty-info-input"}, "Workers will use this to accomplish your task"),
-        React.createElement("p", {}, React.createElement("a", {href:"#", onClick:this.shirtTemplate}, "Use our printing order template to make your request even easier to complete!")),
+        React.createElement("button", {className:"btn btn-primary mb-4", onClick:this.shirtTemplate}, "Use the t shirt printing template"),
         React.createElement("div", {className:"container-fluid", id:"key-val-input"},
           this.state.keyValPairs.map(this.renderKeyValPairs),
-    			React.createElement("input", {type:"text", id:"bounty-key-input", className:"col-6", placeholder:"Instruction Parameter Label"}),
-    			React.createElement("input", {type:"text", id:"bounty-val-input", className:"col-6", placeholder:"Instruction Parameter Value"}),
+    			React.createElement("input", {type:"text", id:"bounty-key-input", className:"col-5", placeholder:"Instruction Parameter Label"}),
+    			React.createElement("input", {type:"text", id:"bounty-val-input", className:"col-5", placeholder:"Instruction Parameter Value"}),
     			br, br,
           React.createElement("button", {onClick:this.addKeyValPair, className:"btn btn-secondary"}, "Add Data"),
   			), br,
