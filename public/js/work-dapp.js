@@ -370,6 +370,10 @@ var IncentiviserOverview = React.createClass({
     )
   },
 
+  filterJobs : function() {
+
+  },
+
   render : function() {
     var mainMarket = incentiviser.address == liveMarketAddr;
     var testMarket = incentiviser.address == testMarketAddr;
@@ -406,11 +410,16 @@ var IncentiviserOverview = React.createClass({
         )
       );
     }
+    var filterForm = React.createElement("div", {className:"row mb-2 ml-2"},
+      React.createElement("input", {type:"text", placeholder:"Filter jobs by keyword...", className:"form-control col-10"}),
+      React.createElement("button", {onClick:this.filterJobs, className:"btn btn-primary ml-5"}, "Filter")
+    )
     var returnBtn = React.createElement("button", {onClick:this.undisplayBounty, className:"btn btn-info"}, "Return to Feed");
     if (this.state.viewedBounty.bountyID == -1) {
       return React.createElement("div", {className:"container-fluid", onMouseOver:this.fetchJobs},
         header,
         React.createElement("div", {className:"job-feed col-12"},
+          filterForm,
           feedBody
         )
       );

@@ -271,7 +271,9 @@ var IncentiviserOverview = React.createClass({
         completed : false,
         completer : "0x"
       },
-      keyValPairs : []
+      keyValPairs : [],
+      step : 0,
+      selectedCategory : "other"
     }
   },
 
@@ -376,24 +378,28 @@ var IncentiviserOverview = React.createClass({
     document.getElementById("bounty-val-input").value = "";
   },
 
-  editPair : function(e) {
-    document.getElementById("bounty-key-input").value = this.state.keyValPairs[e.target.id].key;
-    document.getElementById("bounty-val-input").value = this.state.keyValPairs[e.target.id].val;
+  deletePair : function(e) {
     var kvp = this.state.keyValPairs;
     kvp.splice(e.target.id, 1);
     this.setState({keyValPairs:kvp});
   },
 
+  editPair : function(e) {
+    document.getElementById("bounty-key-input").value = this.state.keyValPairs[e.target.id].key;
+    document.getElementById("bounty-val-input").value = this.state.keyValPairs[e.target.id].val;
+    this.deletePair(e)
+  },
+
   renderKeyValPairs : function(pair, i) {
-    return React.createElement("div", {key:i},
-      React.createElement("input", {className:"col-10 col-lg-5", value:"Label: " + pair.key, disabled:true}),
-      React.createElement("input", {className:"col-10 col-lg-5 mb-3 mb-lg-0", value:"Data: " + pair.val, disabled:true}),
+    return React.createElement("div", {key:i, className:"mb-1"},
+      React.createElement("input", {className:"col-9 col-lg-5", value:"Label: " + pair.key, disabled:true}),
+      React.createElement("input", {className:"col-9 col-lg-5 mb-3 mb-lg-0", value:"Data: " + pair.val, disabled:true}),
       React.createElement("button", {className:"btn btn-info ml-2", id:i, onClick:this.editPair}, "Edit"),
+      React.createElement("button", {className:"btn btn-danger ml-2", id:i, onClick:this.deletePair}, "X")
     );
   },
 
   shirtTemplate : function() {
-    this.pushKeyValPair("Category", "T Shirt Printing");
     this.pushKeyValPair("Artwork (on transparent background)", "Click edit to specify");
     this.pushKeyValPair("Image of desired shirt", "Click edit to specify");
     this.pushKeyValPair("Artwork dimensions", "Click edit to specify");
@@ -440,6 +446,27 @@ var IncentiviserOverview = React.createClass({
     );
   },
 
+  nextStep : function() {
+    this.setState({step:this.state.step + 1})
+  },
+
+  lastStep : function() {
+    this.setState({step:this.state.step - 1})
+  },
+
+  handleCategory : function(e) {
+    if (e.target.value != this.state.selectedCategory) {
+      this.pushKeyValPair("Category", e.target.value)
+      switch(e.target.value) {
+        case "T Shirt Printing":
+          this.shirtTemplate();
+          break;
+        default:
+          // do nothing
+      }
+    }
+  },
+
   render : function() {
     var mainMarket = incentiviser.address == liveMarketAddr;
     var testMarket = incentiviser.address == testMarketAddr;
@@ -465,7 +492,7 @@ var IncentiviserOverview = React.createClass({
       React.createElement("h5", {}, "Search up a bounty you already posted to see its status"),
 			React.createElement("label", {for:"bounty-id-input"}, "Look a bounty up by its ID"),
 			br,
-			React.createElement("input", {type:"number", id:"bounty-id-input", className:"form-control col-10"}),
+			React.createElement("input", {type:"number", id:"bounty-id-input", className:"form-control"}),
 			br,
 			React.createElement("button", {onClick:this.getBounty, className:"btn btn-primary"}, "Look up")
 		);
@@ -493,22 +520,93 @@ var IncentiviserOverview = React.createClass({
       submissionForm = React.createElement("div", {className : "bounty-lookup-form"},
   			React.createElement("h5", {}, "Add pairs of labels & data to your heart's desire"),
   			React.createElement("p", {for:"bounty-info-input"}, "Workers will use this to accomplish your task"),
-        React.createElement("button", {className:"btn btn-primary mb-4", onClick:this.shirtTemplate}, "Use the t shirt printing template"),
         React.createElement("div", {className:"container-fluid", id:"key-val-input"},
           this.state.keyValPairs.map(this.renderKeyValPairs),
     			React.createElement("input", {type:"text", id:"bounty-key-input", className:"col-5", placeholder:"Instruction Parameter Label"}),
     			React.createElement("input", {type:"text", id:"bounty-val-input", className:"col-5", placeholder:"Instruction Parameter Value"}),
     			br, br,
-          React.createElement("button", {onClick:this.addKeyValPair, className:"btn btn-secondary"}, "Add Data"),
-  			), br,
-  			React.createElement("button", {onClick:this.sendJSONBounty, className:"btn btn-primary"}, "Post Job")
+          React.createElement("button", {onClick:this.addKeyValPair, className:"btn btn-info"}, "Add Data"),
+  			)
       );
     var forms = React.createElement("div", {className:"col-12"}, submissionForm, hr, lookupForm);
-    if (this.state.viewedBounty.bountyID == -1)
+    if (this.state.viewedBounty.bountyID == -1) {
+      if (this.state.step == 2) {
+        return React.createElement("div", {className:"container-fluid"},
+  				header,
+  				React.createElement("div", {className:"col-10"},
+            React.createElement("h5", {}, "Configure your job's evaluation"),
+            React.createElement("p", {}, "Workers and suppliers on Bountium are more likely to complete jobs with clear, fair standards for completion - choose one of our tools for evaluating your job, or set up your own if need be. Using one of the recommended methods will help your job get more attention"),
+            br,
+            React.createElement("div", {className:"container row"},
+              React.createElement("div", {className:"col-6"},
+                React.createElement("h6", {}, "Proof of Completion"),
+                React.createElement("small", {}, "How will people know your job got completed correctly?"),
+                React.createElement("select", {className:"form-control", onChange:this.handlePoC},
+                  React.createElement("option", {default:true}, "Choose a completion assessment"),
+                  React.createElement("option", {value:"API Threshold"}, "Automatically Assessed using an API"),
+                  React.createElement("option", {value:"Secret"}, "Automatically Assessed using a secret"),
+                  React.createElement("option", {value:"Photo Evidence"}, "Community Assessed via Photo Evidence"),
+                  React.createElement("option", {value:"Verbal Description"}, "Community Assessed via Verbal Description"),
+                  React.createElement("option", {value:"Poster Approved"}, "Manual Approval by the Poster")
+                )
+              ),
+              React.createElement("div", {className:"col-6"},
+                React.createElement("h6", {}, "Proof of Authorship"),
+                React.createElement("small", {}, "How will people know who completed your job?"),
+                React.createElement("select", {className:"form-control", onChange:this.handlePoA},
+                  React.createElement("option", {default:true}, "Choose an authorship assessment"),
+                  React.createElement("option", {value:"Time of Completion Prediction"}, "Time of Completion Prediction"),
+                  React.createElement("option", {value:"Cryptography"}, "Cryptographic Signature to Prove ID"),
+                  React.createElement("option", {value:"Photo Evidence"}, "Community Assessed via Timestamped Photo with user ID"),
+                  React.createElement("option", {value:"Verbal Description"}, "Community Assessed via Verbal Description"),
+                  React.createElement("option", {value:"Poster Approved"}, "Manual Choice by the Poster")
+                )
+              ),
+            ), br,
+            React.createElement("div", {className:""},
+              React.createElement("button", {onClick:this.lastStep, className:"btn btn-primary mr-1"}, "←"),
+              React.createElement("button", {onClick:this.sendJSONBounty, className:"btn btn-primary"}, "Post Job")
+            ),
+            hr,
+            lookupForm
+          )
+        );
+      } else if (this.state.step == 1) {
+        return React.createElement("div", {className:"container-fluid"},
+  				header,
+  				React.createElement("div", {className:"col-10"},
+            submissionForm, br,
+            React.createElement("div", {className:""},
+              React.createElement("button", {onClick:this.lastStep, className:"btn btn-primary mr-1"}, "←"),
+              React.createElement("button", {onClick:this.nextStep, className:"btn btn-primary"}, "→")
+            ),
+            hr,
+            lookupForm
+          )
+        );
+      }
       return React.createElement("div", {className:"container-fluid"},
 				header,
-				forms
+        React.createElement("div", {className:"col-10"},
+          React.createElement("div", {className : "bounty-lookup-form"},
+            React.createElement("h5", {}, "Title and Describe Your Job"),
+            React.createElement("input", {type:"text", placeholder:"Title...", className:"form-control", id:"bounty-title-input"}),
+            br,
+            React.createElement("textarea", {placeholder:"Description of your job...", className:"form-control", id:"bounty-description-input"}),
+            br,
+            React.createElement("select", {className:"form-control", onChange:this.handleCategory},
+              React.createElement("option", {default:true}, "Choose a category"),
+              React.createElement("option", {value:"T Shirt Printing"}, "T Shirt Printing"),
+              React.createElement("option", {value:"Software Outsourcing"}, "Software Outsourcing"),
+              React.createElement("option", {value:"Other"}, "Other")
+            ), br,
+            React.createElement("button", {onClick:this.nextStep, className:"btn btn-primary"}, "→")
+          ),
+          hr,
+          lookupForm
+        )
       );
+    }
     return React.createElement("div", {className:"container-fluid"},
 			header,
 			React.createElement(BountyReview, {bounty:this.state.viewedBounty}),
