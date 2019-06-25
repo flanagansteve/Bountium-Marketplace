@@ -236,10 +236,10 @@ var Dashboard = React.createClass({
         React.createElement("h3", {}, "Find a market for your job"),
         React.createElement("div", {},
           React.createElement("p", {}, "Example market on Ropsten at: ",
-            React.createElement("a", {href:"/post.html?market=" + testMarketAddr}, testMarketAddr)
+            React.createElement("a", {href:"/post?market=" + testMarketAddr}, testMarketAddr)
           ),
           React.createElement("p", {}, "Suggested main market on Mainnet at: ",
-            React.createElement("a", {href:"/post.html?market=" + liveMarketAddr}, liveMarketAddr)
+            React.createElement("a", {href:"/post?market=" + liveMarketAddr}, liveMarketAddr)
           ),
           React.createElement("label", {for:"incentiviser-addr-input"}, "Look market up by address"),
           br,
@@ -454,9 +454,9 @@ var IncentiviserOverview = React.createClass({
       React.createElement("div", {className:"nav navbar-collapse mx-auto"},
         headerText,
         React.createElement("br", {className:"d-md-none"}),
-        React.createElement("a", {className:"btn btn-secondary float-right nav-item ml-auto", href:"/post.html"}, "Search for Custom Market"),
-        (!testMarket && React.createElement("a", {className:"btn btn-primary float-right nav-item", href:"/post.html?market=" + testMarketAddr}, "Go to Test Market")),
-        (!mainMarket && React.createElement("a", {className:"btn btn-info float-right nav-item", href:"/post.html?market=" + liveMarketAddr}, "Go to Live Market"))
+        React.createElement("a", {className:"btn btn-secondary float-right nav-item ml-auto", href:"/post"}, "Search for Custom Market"),
+        (!testMarket && React.createElement("a", {className:"btn btn-primary float-right nav-item", href:"/post?market=" + testMarketAddr}, "Go to Test Market")),
+        (!mainMarket && React.createElement("a", {className:"btn btn-info float-right nav-item", href:"/post?market=" + liveMarketAddr}, "Go to Live Market"))
       ),
       hr
     );
