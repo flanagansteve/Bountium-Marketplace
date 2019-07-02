@@ -112,39 +112,8 @@ function renderPostingInterface(marketAddress) {
 
 var Dashboard = React.createClass({
 
-  getInitialState : function() {
-    var mdt = "string"
-    if (this.props.dataType != null)
-      mdt = this.props.dataType;
-    return {
-      incentAddr : this.props.incentAddr,
-      marketDataType : mdt
-    }
-  },
-
   setIncentAddr : function() {
-    // TODO handle "invalid incent addr" error
-    incentiviser = incentiviserABI.at(document.getElementById("incentiviser-addr-input").value);
-    incentiviser.oracle((err, res) => {
-      if (err)
-        console.error(err)
-      assessor = assessorABI.at(res);
-      // get bounty data type
-      assessor.viewBountyInfo(0, (err, res) => {
-        if (!err) {
-          this.setState({marketDataType:res[1]});
-          this.setState({incentAddr:document.getElementById("incentiviser-addr-input").value});
-        } else {
-          // No bounties have been set for this market. TODO how, then, do we get
-          // its data type? Just presuming a string for now...
-          if (err.message.includes("not a base 16")) {
-            this.setState({incentAddr:document.getElementById("incentiviser-addr-input").value});
-          } else {
-            console.error(err);
-          }
-        }
-      })
-    });
+    renderPostingInterface(document.getElementById("incentiviser-addr-input").value);
   },
 
   lookupIncentByKeyword : function() {
