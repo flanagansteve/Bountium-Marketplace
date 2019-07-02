@@ -152,13 +152,6 @@ var Dashboard = React.createClass({
   },
 
   render : function() {
-    if (this.state.incentAddr != "0x") {
-      return React.createElement("div", {},
-        React.createElement("div", {className:""},
-          React.createElement(PostingInterface, {dataType:this.state.marketDataType})
-        )
-      );
-    }
     return React.createElement("div", {},
       React.createElement("div", {className:"col-12"},
         React.createElement("h3", {}, "Find a market for your job"),
