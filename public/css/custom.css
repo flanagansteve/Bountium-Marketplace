@@ -15,3 +15,8 @@ input[disabled] {
   max-width: 40px;
   overflow-x: scroll;
 }
+
+.link-unstyled, .link-unstyled:link, .link-unstyled:hover {
+  color: inherit;
+  text-decoration: inherit;
+}

@@ -1,13 +1,6 @@
 // TODO render the debuggingInvalidAddress when we get error: invalid address
   // The element is ready, the issue is actually figuring out what web3 call
   // is causing that error...
-// TODO incorporate registrar
-  // for keyword search
-  // just a table of popular ones to choose from
-// TODO let a submitter set up a profile with their name + history. perhaps
-// set them up with a contract?
-// TODO post-dapp and work-dapp should import the BountyReview/Submission react
-// classes from another file to keep them in sync
 // TODO let users drag pairs around to reorder them
 
 incentiviserABI = web3.eth.contract([{"constant":true,"inputs":[],"name":"oracle","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"bountyID","type":"uint256"}],"name":"settle","outputs":[{"name":"success","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"bountyID","type":"uint256"}],"name":"fund","outputs":[],"payable":true,"stateMutability":"payable","type":"function"},{"constant":true,"inputs":[{"name":"","type":"uint256"}],"name":"bounties","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"inputs":[{"name":"_oracle","type":"address"}],"payable":true,"stateMutability":"payable","type":"constructor"},{"payable":true,"stateMutability":"payable","type":"fallback"}]);
@@ -20,6 +13,8 @@ assessor = null;
 liveMarketAddr = "0xfce2e8c52578026ddaa24899921586591bb73fca";
 testMarketAddr = "0xe748d6628cb4f0e87c48509b227b82f831411733";
 
+// TODO we can probably dynamically look at error #2 and ensure they included the 0x
+// TODO which catch() does this go in?
 // Is the user on the right network (ropsten vs mainnet)?
 // did the user include 0x in the address?
 // Did they mis type the address?
@@ -32,12 +27,16 @@ var debuggingInvalidAddress =
       React.createElement("li", {}, "Are you sure the address you used points to a market contract, and not some other contract or another Ethereum user?")
     ),
     React.createElement("p", {}, "If none of these help, please, ",
-      React.createElement("a", {href:"https://gitlab.com/bountium/bountium-t-shirts/issues/new"}, "report this issue"),
+      React.createElement("a", {href:"https://gitlab.com/bountium/bountium-marketplace/issues/new"}, "report this issue"),
     " and we will get back to you as soon as possible."
     )
   );
 
 window.addEventListener('load', async () => {
+  ReactDOM.render(
+    React.createElement(Header, {}),
+    document.getElementById("header")
+  );
   // check for metamask
   if(typeof web3 !== 'undefined') {
     await ethereum.enable();
@@ -70,24 +69,8 @@ function updateInterface() {
     incentiviser.oracle((err, res) => {
       if (err) {
         if (err.message.include("invalid address")) {
-          // most likely causes:
-            // Is the user on the right network (ropsten vs mainnet)?
-            // did the user include 0x in the address?
-            // Did they mis type the address?
-          // TODO we can probably dynamically look at error #2 and ensure they included the 0x
           ReactDOM.render(
-            ReactDOM.createElement("div", {},
-              React.createElement("p", {}, "Uh oh! We couldn't communicate with that smart contract address from your web3 client. It may be a couple things:"),
-              React.createElement("ul", {},
-                React.createElement("li", {}, "Are you on the correct network? If you're trying to use the example market, you must be on Ropsten - click on Metamask to switch. If you're trying to use the live market, you must be on the main network."),
-                React.createElement("li", {}, "Did you include the initial 0x of the market's address, type in the whole address, and type it correctly? You typed in: " + incentiviser.address),
-                React.createElement("li", {}, "Are you sure " + incentiviser.address + " points to a market contract, and not some other contract or another Ethereum user?")
-              ),
-              React.createElement("p", {}, "If none of these help, please, ",
-                React.createElement("a", {href:"https://gitlab.com/bountium/bountium-t-shirts/issues/new"}, "report this issue"),
-              " and we will get back to you as soon as possible."
-              )
-            ),
+            debuggingInvalidAddress,
             document.getElementById("dashboard")
           );
         } else {
@@ -127,24 +110,8 @@ function updateInterface() {
     incentiviser.oracle((err, res) => {
       if (err) {
         if (err.message.include("invalid address")) {
-          // most likely causes:
-            // Is the user on the right network (ropsten vs mainnet)?
-            // did the user include 0x in the address?
-            // Did they mis type the address?
-          // TODO we can probably dynamically look at error #2 and ensure they included the 0x
           ReactDOM.render(
-            ReactDOM.createElement("div", {},
-              React.createElement("p", {}, "Uh oh! We couldn't communicate with that smart contract address from your web3 client. It may be a couple things:"),
-              React.createElement("ul", {},
-                React.createElement("li", {}, "Are you on the correct network? If you're trying to use the example market, you must be on Ropsten - click on Metamask to switch. If you're trying to use the live market, you must be on the main network."),
-                React.createElement("li", {}, "Did you include the initial 0x of the market's address, type in the whole address, and type it correctly? You typed in: " + incentiviser.address),
-                React.createElement("li", {}, "Are you sure " + incentiviser.address + " points to a market contract, and not some other contract or another Ethereum user?")
-              ),
-              React.createElement("p", {}, "If none of these help, please, ",
-                React.createElement("a", {href:"https://gitlab.com/bountium/bountium-t-shirts/issues/new"}, "report this issue"),
-              " and we will get back to you as soon as possible."
-              )
-            ),
+            debuggingInvalidAddress,
             document.getElementById("dashboard")
           );
         } else {
@@ -223,11 +190,10 @@ var Dashboard = React.createClass({
   },
 
   render : function() {
-    var br = React.createElement("br", {});
     if (this.state.incentAddr != "0x") {
       return React.createElement("div", {},
-        React.createElement("div", {className:""}, br,
-          React.createElement(IncentiviserOverview, {dataType:this.state.marketDataType})
+        React.createElement("div", {className:""},
+          React.createElement(PostingInterface, {dataType:this.state.marketDataType})
         )
       );
     }
@@ -236,22 +202,18 @@ var Dashboard = React.createClass({
         React.createElement("h3", {}, "Find a market for your job"),
         React.createElement("div", {},
           React.createElement("p", {}, "Example market on Ropsten at: ",
-            React.createElement("a", {href:"/post?market=" + testMarketAddr}, testMarketAddr)
+            React.createElement("a", {href:"/post/?market=" + testMarketAddr}, testMarketAddr)
           ),
           React.createElement("p", {}, "Suggested main market on Mainnet at: ",
-            React.createElement("a", {href:"/post?market=" + liveMarketAddr}, liveMarketAddr)
+            React.createElement("a", {href:"/post/?market=" + liveMarketAddr}, liveMarketAddr)
           ),
           React.createElement("label", {for:"incentiviser-addr-input"}, "Look market up by address"),
-          br,
           React.createElement("input", {type:"text", className:"form-control col-6", id:"incentiviser-addr-input", placeholder:"0x123..."}),
-          br,
           React.createElement("button", {onClick:this.setIncentAddr, className:"btn btn-primary"}, "Lookup market")
-        ), br,
+        ),
         React.createElement("div", {className:"incentiviser-search-form"},
           React.createElement("label", {for:"incentiviser-keyword-input"}, "Look market up by keyword"),
-          br,
           React.createElement("input", {type:"text", className:"form-control col-6", id:"incentiviser-keyword-input", placeholder:"ie, \"Delivery\""}),
-          br,
           React.createElement("button", {onClick:this.lookupIncentByKeyword, className:"btn btn-primary"}, "Lookup market")
         )
         // TODO show either most popular incents in table here, or search results
@@ -260,7 +222,7 @@ var Dashboard = React.createClass({
   }
 });
 
-var IncentiviserOverview = React.createClass({
+var PostingInterface = React.createClass({
 
   getInitialState : function() {
     return {
@@ -270,10 +232,7 @@ var IncentiviserOverview = React.createClass({
         bountyData : null,
         completed : false,
         completer : "0x"
-      },
-      keyValPairs : [],
-      step : 0,
-      selectedCategory : "other"
+      }
     }
   },
 
@@ -285,13 +244,6 @@ var IncentiviserOverview = React.createClass({
       completed : false,
       completer : "0x"
     }});
-  },
-
-  sendBounty : function() {
-    if (this.props.dataType == "string" || this.props.dataType == "jsonObj")
-      this.sendToAssessor(stringToBytes(document.getElementById("bounty-info-input").value));
-    else if (this.props.dataType == "uint")
-      this.sendToAssessor(uintToBytes(document.getElementById("bounty-info-input").value));
   },
 
   getBountyById : function(id) {
@@ -330,391 +282,44 @@ var IncentiviserOverview = React.createClass({
   },
 
   getBounty : function() {
-    var vq = this.state.viewedBounty;
-    vq.bountyID = document.getElementById("bounty-id-input").value;
-    incentiviser.bounties(vq.bountyID, (err, res) => {
-      if (err)
-        console.error(err)
-      else
-        vq.bounty = res
-    });
-    assessor.completed(vq.bountyID, (err, res) => {
-      if (err) {
-        console.error(err)
-      } else {
-        vq.completed = res[0];
-        if (res[0])
-          vq.completer = res[1];
-      }
-    });
-		assessor.viewBountyInfo(vq.bountyID, (err, res) => {
-			if (err) {
-				if(err.message.includes("not a base 16")) {
-					vq.bountyData = stringToBytes("No bounty set with this ID on this market");
-					vq.dataType = "string";
-					this.setState({viewedBounty:vq});
-				} else {
-					console.error(err);
-				}
-			} else {
-        vq.bountyData = res[0];
-        vq.dataType = res[1];
-        this.setState({viewedBounty:vq});
-      }
-		});
-  },
-
-  pushKeyValPair : function(key, val) {
-    var newPairsList = this.state.keyValPairs;
-    newPairsList.push({key:key, val:val});
-    this.setState({keyValPairs:newPairsList});
-  },
-
-  addKeyValPair : function() {
-    var key = document.getElementById("bounty-key-input").value;
-    var val = document.getElementById("bounty-val-input").value;
-    this.pushKeyValPair(key, val);
-    document.getElementById("bounty-key-input").value = "";
-    document.getElementById("bounty-val-input").value = "";
-  },
-
-  deletePair : function(e) {
-    var kvp = this.state.keyValPairs;
-    kvp.splice(e.target.id, 1);
-    this.setState({keyValPairs:kvp});
-  },
-
-  editPair : function(e) {
-    document.getElementById("bounty-key-input").value = this.state.keyValPairs[e.target.id].key;
-    document.getElementById("bounty-val-input").value = this.state.keyValPairs[e.target.id].val;
-    this.deletePair(e)
-  },
-
-  renderKeyValPairs : function(pair, i) {
-    return React.createElement("div", {key:i, className:"mb-1"},
-      React.createElement("input", {className:"col-9 col-lg-5", value:"Label: " + pair.key, disabled:true}),
-      React.createElement("input", {className:"col-9 col-lg-5 mb-3 mb-lg-0", value:"Data: " + pair.val, disabled:true}),
-      React.createElement("button", {className:"btn btn-info ml-2", id:i, onClick:this.editPair}, "Edit"),
-      React.createElement("button", {className:"btn btn-danger ml-2", id:i, onClick:this.deletePair}, "X")
-    );
-  },
-
-  shirtTemplate : function() {
-    this.pushKeyValPair("Artwork (on transparent background)", "Click edit to specify");
-    this.pushKeyValPair("Image of desired shirt", "Click edit to specify");
-    this.pushKeyValPair("Artwork dimensions", "Click edit to specify");
-    this.pushKeyValPair("Link to svg file of CMYK:", "Click edit to specify");
-    this.pushKeyValPair("Quantity", "Click edit to specify");
-    this.pushKeyValPair("Size", "Click edit to specify");
-    this.pushKeyValPair("Blank Information, or Link to Blank", "Click edit to specify");
-    this.pushKeyValPair("Due Date", "Click edit to specify");
-    this.pushKeyValPair("Poster contact info", "Click edit to specify");
-  },
-
-  sendJSONBounty : function() {
-    // TODO there's likely a way to actually create the JSON obj as a state var
-    // and replace the following loop with toString(). This works for now tho:
-    var toSend = "{";
-    for (let i = 0; i < this.state.keyValPairs.length; i++) {
-      toSend += "\"" + this.state.keyValPairs[i].key +
-                "\":\"" + this.state.keyValPairs[i].val + "\",";
-    }
-    // remove last comma:
-    toSend = toSend.substring(0, toSend.length - 1);
-    toSend += "}"
-    this.sendToAssessor(stringToBytes(toSend));
-  },
-
-  sendToAssessor : function(bytes) {
-    assessor.submit(bytes, (err, res) => {
-        if(err)
-          console.error(err);
-        else {
-          var confirmSubmission = assessor.RequestReceived((err, res) => {
-            if (err)
-              console.error(err);
-            else {
-              if (res.args.sender == userAccount) {
-                alert("Success - review your bounty below.");
-                this.getBountyById(res.args.bountyID);
-              }
-            }
-          })
-          alert("Your job posting is being processed. If you'd like to make sure it processed correctly, wait a bit and it will show up below.");
-        }
-      }
-    );
-  },
-
-  nextStep : function() {
-    this.setState({step:this.state.step + 1})
-  },
-
-  lastStep : function() {
-    this.setState({step:this.state.step - 1})
-  },
-
-  handleCategory : function(e) {
-    if (e.target.value != this.state.selectedCategory) {
-      this.pushKeyValPair("Category", e.target.value)
-      switch(e.target.value) {
-        case "T Shirt Printing":
-          this.shirtTemplate();
-          break;
-        default:
-          // do nothing
-      }
-    }
+    this.getBountyById(document.getElementById("bounty-id-input").value);
   },
 
   render : function() {
     var mainMarket = incentiviser.address == liveMarketAddr;
     var testMarket = incentiviser.address == testMarketAddr;
     var hr = React.createElement("hr", {});
-    var headerText = React.createElement("h3", {onClick:this.undisplayBounty}, "Welcome to market: ", React.createElement("a", {href:"#"}, "Custom Market"));
+    var headerText = React.createElement("h3", {onClick:this.undisplayBounty}, "Welcome to a ", React.createElement("a", {href:"#"}, "Custom Market"));
     if (mainMarket) {
-      headerText = React.createElement("h3", {onClick:this.undisplayBounty}, "Welcome to market: ", React.createElement("a", {href:"#"}, "The Live Market"));
+      headerText = React.createElement("h3", {onClick:this.undisplayBounty}, "Welcome to the ", React.createElement("a", {href:"#"}, "Live Market"));
     } else if (testMarket) {
-      headerText = React.createElement("h3", {onClick:this.undisplayBounty}, "Welcome to market: ", React.createElement("a", {href:"#"}, "The Test Market"));
+      headerText = React.createElement("h3", {onClick:this.undisplayBounty}, "Welcome to the ", React.createElement("a", {href:"#"}, "Test Market"));
     }
     var header = React.createElement("div", {},
       React.createElement("div", {className:"nav navbar-collapse mx-auto"},
         headerText,
         React.createElement("br", {className:"d-md-none"}),
         React.createElement("a", {className:"btn btn-secondary float-right nav-item ml-auto", href:"/post"}, "Search for Custom Market"),
-        (!testMarket && React.createElement("a", {className:"btn btn-primary float-right nav-item", href:"/post?market=" + testMarketAddr}, "Go to Test Market")),
-        (!mainMarket && React.createElement("a", {className:"btn btn-info float-right nav-item", href:"/post?market=" + liveMarketAddr}, "Go to Live Market"))
+        (!testMarket && React.createElement("a", {className:"btn btn-primary float-right nav-item", href:"/post/?market=" + testMarketAddr}, "Go to Test Market")),
+        (!mainMarket && React.createElement("a", {className:"btn btn-info float-right nav-item", href:"/post/?market=" + liveMarketAddr}, "Go to Live Market"))
       ),
       hr
     );
-		var br = React.createElement("br", {});
-    var lookupForm = React.createElement("div", {className : "bounty-lookup-form"},
-      React.createElement("h5", {}, "Search up a bounty you already posted to see its status"),
-			React.createElement("label", {for:"bounty-id-input"}, "Look a bounty up by its ID"),
-			br,
-			React.createElement("input", {type:"number", id:"bounty-id-input", className:"form-control"}),
-			br,
-			React.createElement("button", {onClick:this.getBounty, className:"btn btn-primary"}, "Look up")
-		);
-		var submissionForm;
-    // TODO handle other marketDataTypes
-    if (this.props.dataType == "string")
-      submissionForm = React.createElement("div", {className : "bounty-lookup-form"},
-  			React.createElement("h5", {}, "Submit a new bounty with string instructions to this incentiviser market"),
-  			br,
-  			React.createElement("input", {type:"text", id:"bounty-info-input", className:"form-control", placeholder:"Instructions here..."}),
-  			br,
-  			React.createElement("button", {onClick:this.sendBounty, className:"btn btn-primary"}, "Post Job")
-  		);
-    else if (this.props.dataType == "uint")
-      submissionForm = React.createElement("div", {className : "bounty-lookup-form"},
-        React.createElement("h5", {}, "Submit a new bounty with integer data to this incentiviser market"),
-        br,
-        React.createElement("label", {for:"bounty-info-input"}, "Data:"),
-        br,
-        React.createElement("input", {type:"number", id:"bounty-info-input"}),
-        br,
-        React.createElement("button", {onClick:this.sendBounty, className:"btn btn-primary"}, "Post Job")
-      );
-    else if (this.props.dataType == "jsonObj")
-      submissionForm = React.createElement("div", {className : "bounty-lookup-form"},
-  			React.createElement("h5", {}, "Add pairs of labels & data to your heart's desire"),
-  			React.createElement("p", {for:"bounty-info-input"}, "Workers will use this to accomplish your task"),
-        React.createElement("div", {className:"container-fluid", id:"key-val-input"},
-          this.state.keyValPairs.map(this.renderKeyValPairs),
-    			React.createElement("input", {type:"text", id:"bounty-key-input", className:"col-5", placeholder:"Instruction Parameter Label"}),
-    			React.createElement("input", {type:"text", id:"bounty-val-input", className:"col-5", placeholder:"Instruction Parameter Value"}),
-    			br, br,
-          React.createElement("button", {onClick:this.addKeyValPair, className:"btn btn-info"}, "Add Data"),
-  			)
-      );
-    var forms = React.createElement("div", {className:"col-12"}, submissionForm, hr, lookupForm);
-    if (this.state.viewedBounty.bountyID == -1) {
-      if (this.state.step == 2) {
-        return React.createElement("div", {className:"container-fluid"},
-  				header,
-  				React.createElement("div", {className:"col-10"},
-            React.createElement("h5", {}, "Configure your job's evaluation"),
-            React.createElement("p", {}, "Workers and suppliers on Bountium are more likely to complete jobs with clear, fair standards for completion - choose one of our tools for evaluating your job, or set up your own if need be. Using one of the recommended methods will help your job get more attention"),
-            br,
-            React.createElement("div", {className:"container row"},
-              React.createElement("div", {className:"col-6"},
-                React.createElement("h6", {}, "Proof of Completion"),
-                React.createElement("small", {}, "How will people know your job got completed correctly?"),
-                React.createElement("select", {className:"form-control", onChange:this.handlePoC},
-                  React.createElement("option", {default:true}, "Choose a completion assessment"),
-                  React.createElement("option", {value:"API Threshold"}, "Automatically Assessed using an API"),
-                  React.createElement("option", {value:"Secret"}, "Automatically Assessed using a secret"),
-                  React.createElement("option", {value:"Photo Evidence"}, "Community Assessed via Photo Evidence"),
-                  React.createElement("option", {value:"Verbal Description"}, "Community Assessed via Verbal Description"),
-                  React.createElement("option", {value:"Poster Approved"}, "Manual Approval by the Poster")
-                )
-              ),
-              React.createElement("div", {className:"col-6"},
-                React.createElement("h6", {}, "Proof of Authorship"),
-                React.createElement("small", {}, "How will people know who completed your job?"),
-                React.createElement("select", {className:"form-control", onChange:this.handlePoA},
-                  React.createElement("option", {default:true}, "Choose an authorship assessment"),
-                  React.createElement("option", {value:"Time of Completion Prediction"}, "Time of Completion Prediction"),
-                  React.createElement("option", {value:"Cryptography"}, "Cryptographic Signature to Prove ID"),
-                  React.createElement("option", {value:"Photo Evidence"}, "Community Assessed via Timestamped Photo with user ID"),
-                  React.createElement("option", {value:"Verbal Description"}, "Community Assessed via Verbal Description"),
-                  React.createElement("option", {value:"Poster Approved"}, "Manual Choice by the Poster")
-                )
-              ),
-            ), br,
-            React.createElement("div", {className:""},
-              React.createElement("button", {onClick:this.lastStep, className:"btn btn-primary mr-1"}, "←"),
-              React.createElement("button", {onClick:this.sendJSONBounty, className:"btn btn-primary"}, "Post Job")
-            ),
-            hr,
-            lookupForm
-          )
-        );
-      } else if (this.state.step == 1) {
-        return React.createElement("div", {className:"container-fluid"},
-  				header,
-  				React.createElement("div", {className:"col-10"},
-            submissionForm, br,
-            React.createElement("div", {className:""},
-              React.createElement("button", {onClick:this.lastStep, className:"btn btn-primary mr-1"}, "←"),
-              React.createElement("button", {onClick:this.nextStep, className:"btn btn-primary"}, "→")
-            ),
-            hr,
-            lookupForm
-          )
-        );
-      }
+    if (this.state.viewedBounty.bountyID == -1)
       return React.createElement("div", {className:"container-fluid"},
-				header,
-        React.createElement("div", {className:"col-10"},
-          React.createElement("div", {className : "bounty-lookup-form"},
-            React.createElement("h5", {}, "Title and Describe Your Job"),
-            React.createElement("input", {type:"text", placeholder:"Title...", className:"form-control", id:"bounty-title-input"}),
-            br,
-            React.createElement("textarea", {placeholder:"Description of your job...", className:"form-control", id:"bounty-description-input"}),
-            br,
-            React.createElement("select", {className:"form-control", onChange:this.handleCategory},
-              React.createElement("option", {default:true}, "Choose a category"),
-              React.createElement("option", {value:"T Shirt Printing"}, "T Shirt Printing"),
-              React.createElement("option", {value:"Software Outsourcing"}, "Software Outsourcing"),
-              React.createElement("option", {value:"Other"}, "Other")
-            ), br,
-            React.createElement("button", {onClick:this.nextStep, className:"btn btn-primary"}, "→")
-          ),
-          hr,
-          lookupForm
-        )
-      );
-    }
+        header,
+        React.createElement(PostingFlow, {
+          dataType : this.props.dataType,
+          getBountyById : this.getBountyById,
+          assessor : assessor
+        }),
+        hr,
+        React.createElement(PosterLookupForm, {getBounty : this.getBounty})
+      )
     return React.createElement("div", {className:"container-fluid"},
 			header,
-			React.createElement(BountyReview, {bounty:this.state.viewedBounty}),
+			React.createElement(Bounty, {bounty:this.state.viewedBounty}),
       React.createElement("button", {onClick:this.undisplayBounty, className:"btn btn-info float-right"}, "Post another job")
-    );
-  }
-});
-
-var BountyReview = React.createClass({
-
-  // converts a JSON pair of key : imageUrl to a div with the label and rendered img
-  keyValToImgDiv : function(labelAndUrl, key) {
-    return React.createElement("div", {key:key},
-      React.createElement("p", {}, labelAndUrl[0]),
-      React.createElement("img", {src:labelAndUrl[1], className:"supplier-instructions-img"}),
-      React.createElement("p", {}, "Link to downloadable image: ", React.createElement("a", {href:labelAndUrl[1]}, labelAndUrl[1]))
-    );
-  },
-
-  strToP : function(str, key) {
-    return React.createElement("p", {key:key}, str);
-  },
-
-  fund : function() {
-    incentiviser.fund.sendTransaction(
-      this.props.bounty.bountyID,
-      {from:userAccount, value : web3.toWei(document.getElementById("wei-to-send").value, 'ether')},
-      (err, res) => {
-      if(err)
-        console.error(err);
-      else {
-        alert("Your funding is being sent. If you'd like, wait for the transaction to confirm in your wallet and refresh the page to see the new bounty balance");
-      }
-    });
-  },
-
-  render : function() {
-  	var bountyInstructions = null;
-  	if (this.props.bounty.dataType == "jsonObj") {
-      var dataObj;
-      var imgsArr = [];
-  		var instructionsArr = [];
-  		try {
-        dataObj = JSON.parse(bytesToString("" + this.props.bounty.bountyData));
-      } catch (err) {
-        console.error(err);
-        if (err.message.includes("expected")) {
-          instructionsArr.push("The poster of this bounty has sent malformed instruction data and we can't display it well. Here is the raw instruction data:");
-          instructionsArr.push(bytesToString("" + this.props.bounty.bountyData));
-        }
-      }
-  		for (var key in dataObj) {
-  			if (dataObj.hasOwnProperty(key)) {
-          try {
-            // if one of the params is an image url, render properly
-            if (
-              dataObj[key].substr(dataObj[key].length - 4) == ".jpg" ||
-              dataObj[key].substr(dataObj[key].length - 4) == ".png" ||
-              dataObj[key].substr(dataObj[key].length - 5) == ".jpeg"
-            ) {
-              imgsArr.push([key, dataObj[key]]);
-            } else {
-      				instructionsArr.push(key + " : " + dataObj[key]);
-            }
-          } catch (e) {
-            instructionsArr.push(key + " : " + dataObj[key]);
-          }
-  			}
-  		}
-  		bountyInstructions = React.createElement("div", {}, imgsArr.map(this.keyValToImgDiv), instructionsArr.map(this.strToP));
-  	} else {
-  		var bountyData = null;
-  		if (this.props.bounty.dataType == "string")
-  			bountyData = bytesToString("" + this.props.bounty.bountyData);
-  		else
-  			bountyData = bytesToInt(this.props.bounty.bountyData);
-  		bountyInstructions = React.createElement("p", {}, "Relevant data/instructions: " + bountyData);
-  	}
-		var input = React.createElement("input", {type:"number", className:"form-control", id:"bounty-response-input"});
-		if (this.props.bounty.dataType == "string" || this.props.bounty.dataType == "jsonObj") {
-			input = React.createElement("input", {type:"text", className:"form-control", placeholder:"Follow this market's instructions to submit evidence of completion", id:"bounty-response-input"});
-		} else {
-			bountyData = bytesToInt(this.props.bounty.bountyData);
-		}
-		if (bountyData == "No bounty set with this ID on this market")
-			return React.createElement("div", {className:"col-12"},
-				React.createElement("p", {}, "Order id: " + this.props.bounty.bountyID),
-				React.createElement("p", {}, "Payment Available: " + this.props.bounty.bounty + " wei"),
-				React.createElement("p", {}, "Relevant data/instructions: " + bountyData)
-			);
-    if (this.props.bounty.completed) {
-      return React.createElement("div", {className:"col-12"},
-    		React.createElement("p", {}, "Bounty id: " + this.props.bounty.bountyID),
-    		React.createElement("p", {}, "Bounty Available: " + this.props.bounty.bounty + " wei"),
-    		bountyInstructions,
-    		React.createElement("p", {}, "Completed: Yes, by " + this.props.bounty.completer),
-    		React.createElement("button", {onClick:this.settle, className:"btn btn-primary"}, "Pay out")
-    	);
-    }
-    return React.createElement("div", {className:"col-12"},
-      React.createElement("p", {}, "Order id: " + this.props.bounty.bountyID),
-      React.createElement("p", {}, "Payment Available: " + this.props.bounty.bounty + " wei"),
-      bountyInstructions,
-      React.createElement("p", {}, "Completed: No"),
-      React.createElement("legend", {}, "Fund this bounty to hasten its completion"),
-      React.createElement("p", {}, "Amount to send, in Ether"),
-      React.createElement("input", {id:"wei-to-send"}),
-      React.createElement("button", {className:"btn btn-primary", onClick:this.fund}, "Fund")
     );
   }
 });
@@ -735,31 +340,9 @@ function stringToBytes(string) {
   return "0x" + result;
 }
 
-function bytesToString(bytes) {
-  var bytes = "" + bytes;
-  var result = '';
-  for (var i = 0; i < bytes.length; i+=2)
-    if (bytes.substr(i, 2) != "00" && bytes.substr(i, 2) != "0x")
-    	result += String.fromCharCode(parseInt(bytes.substr(i, 2), 16));
-  return result;
-}
-
-function bytesToInt(bytes) {
-	return Number(bytes);
-}
-
 window.alert = function(text) {
   ReactDOM.render(
-    React.createElement("div", {className:"alert alert-warning alert-dismissible fade show", role:"alert", id:"to-dismiss"},
-      text,
-      React.createElement("button", {
-        type:"button",
-        className:"close",
-        dataDismiss:"alert",
-        ariaLabel:"Close",
-        onClick:function() { document.getElementById("to-dismiss").remove() }
-      }, React.createElement("span", {ariaHidden:"true"}, "x"))
-    ),
+    React.createElement(BootstrapAlert, {text:text}),
     document.getElementById("workflow-container")
   );
 }
