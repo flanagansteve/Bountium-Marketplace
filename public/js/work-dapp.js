@@ -54,97 +54,54 @@ window.addEventListener('load', async () => {
 });
 
 function updateInterface() {
-	document.getElementById("workflow-container").innerHTML = "";
-  var addr = location.search;
-  if (addr.includes("custom")) {
+  document.getElementById("workflow-container").innerHTML = "";
+  if (location.search.includes("custom"))
     ReactDOM.render(
       React.createElement(WorkingDashboard, {incentAddr:"0x"}, userAccount),
       document.getElementById("dashboard")
     );
-  }
-  if (addr.includes("market=0x")) {
-		// presuming its a valid incent addr... TODO
-		incentiviser = incentiviserABI.at(addr.substring(addr.indexOf("market=") + "market=".length, addr.indexOf("market=") + "market=".length + 42));
-    incentiviser.oracle((err, res) => {
-      if (err) {
-        if (err.message.include("invalid address")) {
+  else if (location.search.includes("market=0x"))
+    renderWorkingFeed(location.search.substring(location.search.indexOf("market=") + "market=".length, location.search.indexOf("market=") + "market=".length + 42));
+  else
+    renderWorkingFeed(liveMarketAddr);
+}
+
+function renderWorkingFeed(marketAddress) {
+  // presuming its a valid incent addr... TODO
+  incentiviser = incentiviserABI.at(marketAddress);
+  incentiviser.oracle((err, res) => {
+    if (err) {
+      if (err.message.include("invalid address")) {
+        ReactDOM.render(
+          debuggingInvalidAddress,
+          document.getElementById("dashboard")
+        );
+      } else {
+        console.error(err);
+      }
+    } else {
+      assessor = assessorABI.at(res);
+      assessor.viewBountyInfo(0, (err, res) => {
+        if (!err) {
           ReactDOM.render(
-            debuggingInvalidAddress,
+            React.createElement(WorkingFeed, {dataType:res[1]}),
             document.getElementById("dashboard")
           );
         } else {
-          console.error(err);
-        }
-      } else {
-        assessor = assessorABI.at(res);
-        assessor.viewBountyInfo(0, (err, res) => {
-          if (!err) {
-      			ReactDOM.render(
-      	      React.createElement(WorkingDashboard,
-                {
-                  incentAddr:incentiviser.address,
-                  dataType:res[1]
-                }, userAccount
-              ),
-      	      document.getElementById("dashboard")
-      	    );
+          // No bounties have been set for this market. TODO how, then, do we get
+          // its data type? Just presuming a string for now...
+          if (err.message.includes("not a base 16")) {
+            ReactDOM.render(
+              React.createElement(WorkingFeed, {dataType:"string"}),
+              document.getElementById("dashboard")
+            );
           } else {
-            // No bounties have been set for this market. TODO how, then, do we get
-            // its data type? Just presuming a string for now...
-            if (err.message.includes("not a base 16")) {
-              ReactDOM.render(
-        	      React.createElement(WorkingDashboard, {incentAddr:incentiviser.address}, userAccount),
-        	      document.getElementById("dashboard")
-        	    );
-            } else {
-              console.error(err);
-            }
+            console.error(err);
           }
-        });
-      }
-    });
-  } else {
-    // Go to live market by default
-    incentiviser = incentiviserABI.at(liveMarketAddr);
-    incentiviser.oracle((err, res) => {
-      if (err) {
-        if (err.message.include("invalid address")) {
-          ReactDOM.render(
-            debuggingInvalidAddress,
-            document.getElementById("dashboard")
-          );
-        } else {
-          console.error(err);
         }
-      } else {
-        assessor = assessorABI.at(res);
-        assessor.viewBountyInfo(0, (err, res) => {
-          if (!err) {
-      			ReactDOM.render(
-      	      React.createElement(WorkingDashboard,
-                {
-                  incentAddr:incentiviser.address,
-                  dataType:res[1]
-                }, userAccount
-              ),
-      	      document.getElementById("dashboard")
-      	    );
-          } else {
-            // No bounties have been set for this market. TODO how, then, do we get
-            // its data type? Just presuming a string for now...
-            if (err.message.includes("not a base 16")) {
-              ReactDOM.render(
-        	      React.createElement(WorkingDashboard, {incentAddr:incentiviser.address}, userAccount),
-        	      document.getElementById("dashboard")
-        	    );
-            } else {
-              console.error(err);
-            }
-          }
-        });
-      }
-    });
-  }
+      });
+    }
+  });
 }
 
 var WorkingDashboard = React.createClass({
@@ -166,27 +123,7 @@ var WorkingDashboard = React.createClass({
 
   setIncentAddr : function() {
     // TODO handle "invalid incent addr" error
-    incentiviser = incentiviserABI.at(document.getElementById("incentiviser-addr-input").value);
-    incentiviser.oracle((err, res) => {
-      if (err)
-        console.error(err)
-      assessor = assessorABI.at(res);
-      // get bounty data type
-      assessor.viewBountyInfo(0, (err, res) => {
-        if (!err) {
-          this.setState({marketDataType:res[1]});
-          this.setState({incentAddr:document.getElementById("incentiviser-addr-input").value});
-        } else {
-          // No bounties have been set for this market. TODO how, then, do we get
-          // its data type? Just presuming a string for now...
-          if (err.message.includes("not a base 16")) {
-            this.setState({incentAddr:document.getElementById("incentiviser-addr-input").value});
-          } else {
-            console.error(err);
-          }
-        }
-      })
-    });
+    renderWorkingFeed(document.getElementById("incentiviser-addr-input").value);
   },
 
   lookupIncentByKeyword : function() {
