@@ -63,6 +63,12 @@ window.addEventListener('load', async () => {
 function updateInterface() {
 	document.getElementById("workflow-container").innerHTML = "";
   var addr = location.search;
+  if (addr.includes("custom")) {
+    ReactDOM.render(
+      React.createElement(Dashboard, {incentAddr:"0x"}, userAccount),
+      document.getElementById("dashboard")
+    );
+  }
   if (addr.includes("market=0x")) {
 		// presuming its a valid incent addr... TODO
 		incentiviser = incentiviserABI.at(addr.substring(addr.indexOf("market=") + "market=".length, addr.indexOf("market=") + "market=".length + 42));
@@ -299,7 +305,7 @@ var PostingInterface = React.createClass({
       React.createElement("div", {className:"nav navbar-collapse mx-auto"},
         headerText,
         React.createElement("br", {className:"d-md-none"}),
-        React.createElement("a", {className:"btn btn-secondary float-right nav-item ml-auto", href:"/post"}, "Search for Custom Market"),
+        React.createElement("a", {className:"btn btn-secondary float-right nav-item ml-auto", href:"/post/?custom"}, "Search for Custom Market"),
         (!testMarket && React.createElement("a", {className:"btn btn-primary float-right nav-item", href:"/post/?market=" + testMarketAddr}, "Go to Test Market")),
         (!mainMarket && React.createElement("a", {className:"btn btn-info float-right nav-item", href:"/post/?market=" + liveMarketAddr}, "Go to Live Market"))
       ),

@@ -2,6 +2,10 @@
 // TODO header with welcome logo
 window.addEventListener('load', async () => {
   ReactDOM.render(
+    React.createElement(Header, {}),
+    document.getElementById("header")
+  );
+  ReactDOM.render(
     React.createElement("div", {className:"welcome-user-options"},
       React.createElement("h1", {}, "Welcome to the Bountium Marketplace"),
       React.createElement("p", {}, "Here, you'll find requests for orders awaiting your completion, as well as tools to make your own requests. Most requests on this marketplace are automatically generated using ", React.createElement("a", {href:"https://gitlab.com/bountium/bountium-smart-contract-infrastructure/tree/master/DAO"}, "Bountium powered DAOs"), ", cutting-edge technology that makes running a business easier than ever before."),

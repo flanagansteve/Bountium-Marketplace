@@ -1,8 +1,8 @@
 var Header = React.createClass({
 
   render : function() {
-    worklink = window.location.href.includes("/post/") ? window.location.href.replace("/post", "/work") : "/work"
-    postlink = window.location.href.includes("/work/") ? window.location.href.replace("/work", "/post") : "/post"
+    worklink = window.location.href.includes("/post/?market") ? window.location.href.replace("/post", "/work") : "/work"
+    postlink = window.location.href.includes("/work/?market") ? window.location.href.replace("/work", "/post") : "/post"
     return React.createElement("header", {className:"navbar navbar-expand"},
         React.createElement("a", {href:"/", className:"navbar-brand mr-0 mr-md-2"},
           "Home"
