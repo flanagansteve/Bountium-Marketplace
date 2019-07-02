@@ -162,7 +162,7 @@ var Dashboard = React.createClass({
     return React.createElement("div", {},
       React.createElement("div", {className:"col-12"},
         React.createElement("h3", {}, "Find a market for your job"),
-        React.createElement("div", {},
+        React.createElement("div", {className:"mb-2"},
           React.createElement("p", {}, "Example market on Ropsten at: ",
             React.createElement("a", {href:"/post/?market=" + testMarketAddr}, testMarketAddr)
           ),
@@ -171,12 +171,12 @@ var Dashboard = React.createClass({
           ),
           React.createElement("label", {for:"incentiviser-addr-input"}, "Look market up by address"),
           React.createElement("input", {type:"text", className:"form-control col-6", id:"incentiviser-addr-input", placeholder:"0x123..."}),
-          React.createElement("button", {onClick:this.setIncentAddr, className:"btn btn-primary"}, "Lookup market")
+          React.createElement("button", {onClick:this.setIncentAddr, className:"btn btn-primary mt-2"}, "Lookup market")
         ),
         React.createElement("div", {className:"incentiviser-search-form"},
           React.createElement("label", {for:"incentiviser-keyword-input"}, "Look market up by keyword"),
           React.createElement("input", {type:"text", className:"form-control col-6", id:"incentiviser-keyword-input", placeholder:"ie, \"Delivery\""}),
-          React.createElement("button", {onClick:this.lookupIncentByKeyword, className:"btn btn-primary"}, "Lookup market")
+          React.createElement("button", {onClick:this.lookupIncentByKeyword, className:"btn btn-primary mt-2"}, "Lookup market")
         )
         // TODO show either most popular incents in table here, or search results
       )
@@ -270,13 +270,15 @@ var PostingInterface = React.createClass({
     if (this.state.viewedBounty.bountyID == -1)
       return React.createElement("div", {className:"container-fluid"},
         header,
-        React.createElement(PostingFlow, {
-          dataType : this.props.dataType,
-          getBountyById : this.getBountyById,
-          assessor : assessor
-        }),
-        hr,
-        React.createElement(PosterLookupForm, {getBounty : this.getBounty})
+        React.createElement("div", {className:"col-12"},
+          React.createElement(PostingFlow, {
+            dataType : this.props.dataType,
+            getBountyById : this.getBountyById,
+            assessor : assessor
+          }),
+          hr,
+          React.createElement(PosterLookupForm, {getBounty : this.getBounty})
+        )
       )
     return React.createElement("div", {className:"container-fluid"},
 			header,

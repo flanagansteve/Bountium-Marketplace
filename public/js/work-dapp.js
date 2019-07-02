@@ -217,14 +217,14 @@ var WorkingDashboard = React.createClass({
           br,
           React.createElement("input", {type:"text", className:"form-control col-6", id:"incentiviser-addr-input", placeholder:"0x123..."}),
           br,
-          React.createElement("button", {onClick:this.setIncentAddr, className:"btn btn-primary"}, "Lookup market")
+          React.createElement("button", {onClick:this.setIncentAddr, className:"btn btn-primary mt-2"}, "Lookup market")
         ), br,
         React.createElement("div", {className:"incentiviser-search-form"},
           React.createElement("label", {for:"incentiviser-keyword-input"}, "Look market up by keyword"),
           br,
           React.createElement("input", {type:"text", className:"form-control col-6", id:"incentiviser-keyword-input", placeholder:"ie, \"Delivery\""}),
           br,
-          React.createElement("button", {onClick:this.lookupIncentByKeyword, className:"btn btn-primary"}, "Lookup market")
+          React.createElement("button", {onClick:this.lookupIncentByKeyword, className:"btn btn-primary mt-2"}, "Lookup market")
         )
         // TODO show either most popular incents in table here, or search results
       )
