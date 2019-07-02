@@ -351,9 +351,8 @@ var WorkingFeed = React.createClass({
   fetchJobs : function() {
     var i = 0;
     for (i; i < jobsPerFetch; i++) {
-      if (this.state.jobsStillToFetch - i - 1 < 0) {
+      if (this.state.jobsStillToFetch - i - 1 < 0)
         break;
-      }
       this.getJob(this.state.jobsStillToFetch - i - 1);
     }
     if (this.state.jobsStillToFetch != 0)
@@ -454,7 +453,7 @@ var WorkingFeed = React.createClass({
         id:"min-pay",
         onChange:this.filterJobPay,
         className:"form-control"})
-    )
+    );
     var filterByCategory = React.createElement("select", {
       className:"form-control",
       id:"bounty-category-input",
@@ -487,7 +486,7 @@ var WorkingFeed = React.createClass({
         filterByCategory,
         filterByLocation
       )
-    )
+    );
     var returnBtn = React.createElement("button", {onClick:this.undisplayBounty, className:"btn btn-info"}, "Return to Feed");
     if (this.state.viewedBounty.bountyID == -1) {
       return React.createElement("div", {className:"container-fluid", onMouseOver:this.fetchJobs},

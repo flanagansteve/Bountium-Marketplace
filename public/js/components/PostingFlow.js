@@ -126,7 +126,7 @@ var PostingFlow = React.createClass({
 
   render : function() {
     if (this.state.step == 0) {
-      return React.createElement("div", {className:""},
+      return React.createElement("div", {className:"container"},
         React.createElement(JobHeaderForm, {
           jobTitle : this.state.jobTitle,
           jobDescription : this.state.jobDescription,
@@ -137,7 +137,7 @@ var PostingFlow = React.createClass({
         React.createElement("button", {onClick:this.nextStep, className:"btn btn-primary mt-2"}, "→")
       );
     } else if (this.state.step == 1) {
-      return React.createElement("div", {className:""},
+      return React.createElement("div", {className:"container"},
         React.createElement(JobDetailsForm, {
           sendBounty : this.sendBounty,
           dataType : this.props.dataType,
@@ -151,7 +151,7 @@ var PostingFlow = React.createClass({
         )
       );
     }
-    return React.createElement("div", {className:""},
+    return React.createElement("div", {className:"container"},
       React.createElement("h5", {}, "Configure your job's evaluation"),
       React.createElement("p", {}, "Workers and suppliers on Bountium are more likely to complete jobs with clear, fair standards for completion - choose one of our tools for evaluating your job, or set up your own if need be. Using one of the recommended methods will help your job get more attention."),
       React.createElement("div", {className:"container row"},

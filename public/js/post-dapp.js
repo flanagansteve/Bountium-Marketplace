@@ -1,6 +1,7 @@
 // TODO render the debuggingInvalidAddress when we get error: invalid address
-  // The element is ready, the issue is actually figuring out what web3 call
-  // is causing that error...
+  // The element is ready, the issue is actually figuring out where in the code
+  // to render the element so that it shows up when the error happens...
+  // the console.error() doesnt give a line number
 // TODO let users drag pairs around to reorder them
 
 incentiviserABI = web3.eth.contract([{"constant":true,"inputs":[],"name":"oracle","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"bountyID","type":"uint256"}],"name":"settle","outputs":[{"name":"success","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"bountyID","type":"uint256"}],"name":"fund","outputs":[],"payable":true,"stateMutability":"payable","type":"function"},{"constant":true,"inputs":[{"name":"","type":"uint256"}],"name":"bounties","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"inputs":[{"name":"_oracle","type":"address"}],"payable":true,"stateMutability":"payable","type":"constructor"},{"payable":true,"stateMutability":"payable","type":"fallback"}]);
@@ -22,8 +23,8 @@ var debuggingInvalidAddress =
   React.createElement("div", {},
     React.createElement("p", {}, "Uh oh! We couldn't communicate with that smart contract address from your web3 client. It may be a couple things:"),
     React.createElement("ul", {},
-      React.createElement("li", {}, "Are you on the correct network? If you're trying to use the example market, you must be on Ropsten - click on Metamask to switch. If you're trying to use the live market, you must be on the main network."),
-      React.createElement("li", {}, "Did you include the initial 0x of the market's address, type in the whole address, and type it correctly? You typed in: "),// + incentiviser.address),
+      React.createElement("li", {}, "Are you on the correct network? If you're trying to use the test market, you must be on Ropsten - click on Metamask to switch. If you're trying to use the live market, you must be on the main network."),
+      React.createElement("li", {}, "Did you include the initial 0x of the market's address, type in the whole address, and type it correctly?"),
       React.createElement("li", {}, "Are you sure the address you used points to a market contract, and not some other contract or another Ethereum user?")
     ),
     React.createElement("p", {}, "If none of these help, please, ",
@@ -58,100 +59,55 @@ window.addEventListener('load', async () => {
   }
 });
 
-// TODO the process of setting the incentiviser var, then assessor, then rendering
-// dashboard and handling errors should probably go in its own fucntion
 function updateInterface() {
 	document.getElementById("workflow-container").innerHTML = "";
-  var addr = location.search;
-  if (addr.includes("custom")) {
+  if (location.search.includes("custom"))
     ReactDOM.render(
       React.createElement(Dashboard, {incentAddr:"0x"}, userAccount),
       document.getElementById("dashboard")
     );
-  }
-  if (addr.includes("market=0x")) {
-		// presuming its a valid incent addr... TODO
-		incentiviser = incentiviserABI.at(addr.substring(addr.indexOf("market=") + "market=".length, addr.indexOf("market=") + "market=".length + 42));
-    incentiviser.oracle((err, res) => {
-      if (err) {
-        if (err.message.include("invalid address")) {
+  else if (location.search.includes("market=0x"))
+    renderPostingInterface(location.search.substring(location.search.indexOf("market=") + "market=".length, location.search.indexOf("market=") + "market=".length + 42));
+  else
+    renderPostingInterface(liveMarketAddr);
+}
+
+function renderPostingInterface(marketAddress) {
+  // presuming its a valid incent addr... TODO
+  incentiviser = incentiviserABI.at(marketAddress);
+  incentiviser.oracle((err, res) => {
+    if (err) {
+      if (err.message.include("invalid address")) {
+        ReactDOM.render(
+          debuggingInvalidAddress,
+          document.getElementById("dashboard")
+        );
+      } else {
+        console.error(err);
+      }
+    } else {
+      assessor = assessorABI.at(res);
+      assessor.viewBountyInfo(0, (err, res) => {
+        if (!err) {
           ReactDOM.render(
-            debuggingInvalidAddress,
+            React.createElement(PostingInterface, {dataType:res[1]}),
             document.getElementById("dashboard")
           );
         } else {
-          console.error(err);
-        }
-      } else {
-        assessor = assessorABI.at(res);
-        assessor.viewBountyInfo(0, (err, res) => {
-          if (!err) {
-      			ReactDOM.render(
-      	      React.createElement(Dashboard,
-                {
-                  incentAddr:incentiviser.address,
-                  dataType:res[1]
-                }, userAccount
-              ),
-      	      document.getElementById("dashboard")
-      	    );
+          // No bounties have been set for this market. TODO how, then, do we get
+          // its data type? Just presuming a string for now...
+          if (err.message.includes("not a base 16")) {
+            ReactDOM.render(
+              React.createElement(PostingInterface, {dataType:"string"}),
+              document.getElementById("dashboard")
+            );
           } else {
-            // No bounties have been set for this market. TODO how, then, do we get
-            // its data type? Just presuming a string for now...
-            if (err.message.includes("not a base 16")) {
-              ReactDOM.render(
-        	      React.createElement(Dashboard, {incentAddr:incentiviser.address}, userAccount),
-        	      document.getElementById("dashboard")
-        	    );
-            } else {
-              console.error(err);
-            }
+            console.error(err);
           }
-        });
-      }
-    });
-  } else {
-    // Go to live market by default
-    incentiviser = incentiviserABI.at(liveMarketAddr);
-    incentiviser.oracle((err, res) => {
-      if (err) {
-        if (err.message.include("invalid address")) {
-          ReactDOM.render(
-            debuggingInvalidAddress,
-            document.getElementById("dashboard")
-          );
-        } else {
-          console.error(err);
         }
-      } else {
-        assessor = assessorABI.at(res);
-        assessor.viewBountyInfo(0, (err, res) => {
-          if (!err) {
-      			ReactDOM.render(
-      	      React.createElement(Dashboard,
-                {
-                  incentAddr:incentiviser.address,
-                  dataType:res[1]
-                }, userAccount
-              ),
-      	      document.getElementById("dashboard")
-      	    );
-          } else {
-            // No bounties have been set for this market. TODO how, then, do we get
-            // its data type? Just presuming a string for now...
-            if (err.message.includes("not a base 16")) {
-              ReactDOM.render(
-        	      React.createElement(Dashboard, {incentAddr:incentiviser.address}, userAccount),
-        	      document.getElementById("dashboard")
-        	    );
-            } else {
-              console.error(err);
-            }
-          }
-        });
-      }
-    });
-  }
+      });
+    }
+  });
 }
 
 var Dashboard = React.createClass({
