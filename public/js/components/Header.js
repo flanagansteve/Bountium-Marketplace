@@ -4,7 +4,7 @@ var Header = React.createClass({
     worklink = window.location.href.includes("/post/?market") ? window.location.href.replace("/post", "/work") : "/work"
     postlink = window.location.href.includes("/work/?market") ? window.location.href.replace("/work", "/post") : "/post"
     return React.createElement("header", {className:"navbar navbar-expand"},
-        React.createElement("a", {href:"./", className:"navbar-brand mr-0 mr-md-2"},
+        React.createElement("a", {href:"/", className:"navbar-brand mr-0 mr-md-2"},
           "Home"
         ),
         React.createElement("div", {className:"col-11 mx-auto"},

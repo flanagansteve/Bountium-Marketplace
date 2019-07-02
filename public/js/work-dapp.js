@@ -122,7 +122,6 @@ var WorkingDashboard = React.createClass({
   },
 
   setIncentAddr : function() {
-    // TODO handle "invalid incent addr" error
     renderWorkingFeed(document.getElementById("incentiviser-addr-input").value);
   },
 
