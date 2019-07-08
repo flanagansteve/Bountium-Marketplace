@@ -8,25 +8,6 @@ assessor = null;
 liveMarketAddr = "0xfce2e8c52578026ddaa24899921586591bb73fca";
 testMarketAddr = "0xe748d6628cb4f0e87c48509b227b82f831411733";
 
-// TODO we can probably dynamically look at error #2 and ensure they included the 0x
-// TODO figure out which catch() this goes in
-// Is the user on the right network (ropsten vs mainnet)?
-// did the user include 0x in the address?
-// Did they mis type the address?
-var debuggingInvalidAddress =
-  React.createElement("div", {},
-    React.createElement("p", {}, "Uh oh! We couldn't communicate with that smart contract address from your web3 client. It may be a couple things:"),
-    React.createElement("ul", {},
-      React.createElement("li", {}, "Are you on the correct network? If you're trying to use the example market, you must be on Ropsten - click on Metamask to switch. If you're trying to use the live market, you must be on the main network."),
-      React.createElement("li", {}, "Did you include the initial 0x of the market's address, type in the whole address, and type it correctly? You typed in: "),// + incentiviser.address),
-      React.createElement("li", {}, "Are you sure the address you used points to a market contract, and not some other contract or another Ethereum user?")
-    ),
-    React.createElement("p", {}, "If none of these help, please, ",
-      React.createElement("a", {href:"https://gitlab.com/bountium/bountium-marketplace/issues/new"}, "report this issue"),
-    " and we will get back to you as soon as possible."
-    )
-  );
-
 window.addEventListener('load', async () => {
   ReactDOM.render(
     React.createElement(Header, {}),
@@ -81,25 +62,38 @@ function renderWorkingFeed(marketAddress) {
       }
     } else {
       assessor = assessorABI.at(res);
-      assessor.viewBountyInfo(0, (err, res) => {
-        if (!err) {
-          ReactDOM.render(
-            React.createElement(WorkingFeed, {dataType:res[1]}),
-            document.getElementById("dashboard")
-          );
-        } else {
-          // No bounties have been set for this market. TODO how, then, do we get
-          // its data type? Just presuming a string for now...
-          if (err.message.includes("not a base 16")) {
+      try {
+        assessor.viewBountyInfo(0, (err, res) => {
+          if (!err) {
             ReactDOM.render(
-              React.createElement(WorkingFeed, {dataType:"string"}),
+              React.createElement(WorkingFeed, {dataType:res[1]}),
               document.getElementById("dashboard")
             );
           } else {
-            console.error(err);
+            // No bounties have been set for this market. TODO how, then, do we get
+            // its data type? Just presuming a string for now...
+            if (err.message.includes("not a base 16")) {
+              ReactDOM.render(
+                React.createElement(WorkingFeed, {dataType:"string"}),
+                document.getElementById("dashboard")
+              );
+            } else {
+              console.error(err);
+            }
           }
-        }
-      });
+        });
+      } catch (err) {
+        // Log it, give an error message, and present the custom form
+        console.error(err);
+        ReactDOM.render(
+          React.createElement(ErrorMessage, {invalidAddress : err.message.includes("invalid address")}) ,
+          document.getElementById("workflow-container")
+        );
+        ReactDOM.render(
+          React.createElement(WorkingDashboard, {incentAddr:"0x"}, userAccount),
+          document.getElementById("dashboard")
+        );
+      }
     }
   });
 }
@@ -141,7 +135,7 @@ var WorkingDashboard = React.createClass({
     }
     return React.createElement("div", {},
       React.createElement("div", {className:"col-12"},
-        React.createElement("h3", {}, "Find a market for your job"),
+        React.createElement("h3", {}, "Find a market and get to work"),
         React.createElement("div", {},
           React.createElement("p", {}, "Example market on Ropsten at: ",
             React.createElement("a", {href:"/work?market=" + testMarketAddr}, testMarketAddr)
