@@ -42,31 +42,31 @@ function updateInterface() {
       document.getElementById("dashboard")
     );
   else if (location.search.includes("market=0x"))
-    renderWorkingFeed(location.search.substring(location.search.indexOf("market=") + "market=".length, location.search.indexOf("market=") + "market=".length + 42));
+    if (location.search.includes("bounty="))
+      renderWorkingFeed(
+        location.search.substring(location.search.indexOf("market=") + "market=".length, location.search.indexOf("market=") + "market=".length + 42),
+        location.search.substring(location.search.indexOf("bounty=") + "bounty=".length)
+      )
+    else
+      renderWorkingFeed(location.search.substring(location.search.indexOf("market=") + "market=".length, location.search.indexOf("market=") + "market=".length + 42));
   else
     renderWorkingFeed(liveMarketAddr);
 }
 
+// TODO the below two functions can be consolidated into one
 function renderWorkingFeed(marketAddress) {
   // presuming its a valid incent addr... TODO
   incentiviser = incentiviserABI.at(marketAddress);
   incentiviser.oracle((err, res) => {
     if (err) {
-      if (err.message.include("invalid address")) {
-        ReactDOM.render(
-          debuggingInvalidAddress,
-          document.getElementById("dashboard")
-        );
-      } else {
-        console.error(err);
-      }
+      console.error(err);
     } else {
       assessor = assessorABI.at(res);
       try {
         assessor.viewBountyInfo(0, (err, res) => {
           if (!err) {
             ReactDOM.render(
-              React.createElement(WorkingFeed, {dataType:res[1]}),
+              React.createElement(WorkingFeed, {dataType:res[1], bountyNum:-1}),
               document.getElementById("dashboard")
             );
           } else {
@@ -74,7 +74,51 @@ function renderWorkingFeed(marketAddress) {
             // its data type? Just presuming a string for now...
             if (err.message.includes("not a base 16")) {
               ReactDOM.render(
-                React.createElement(WorkingFeed, {dataType:"string"}),
+                React.createElement(WorkingFeed, {dataType:"string", bountyNum:-1}),
+                document.getElementById("dashboard")
+              );
+            } else {
+              console.error(err);
+            }
+          }
+        });
+      } catch (err) {
+        // Log it, give an error message, and present the custom form
+        console.error(err);
+        ReactDOM.render(
+          React.createElement(ErrorMessage, {invalidAddress : err.message.includes("invalid address")}) ,
+          document.getElementById("workflow-container")
+        );
+        ReactDOM.render(
+          React.createElement(WorkingDashboard, {incentAddr:"0x"}, userAccount),
+          document.getElementById("dashboard")
+        );
+      }
+    }
+  });
+}
+
+function renderWorkingFeed(marketAddress, bountyNum) {
+  // presuming its a valid incent addr... TODO
+  incentiviser = incentiviserABI.at(marketAddress);
+  incentiviser.oracle((err, res) => {
+    if (err) {
+      console.error(err);
+    } else {
+      assessor = assessorABI.at(res);
+      try {
+        assessor.viewBountyInfo(0, (err, res) => {
+          if (!err) {
+            ReactDOM.render(
+              React.createElement(WorkingFeed, {dataType:res[1], bountyNum:bountyNum}),
+              document.getElementById("dashboard")
+            );
+          } else {
+            // No bounties have been set for this market. TODO how, then, do we get
+            // its data type? Just presuming a string for now...
+            if (err.message.includes("not a base 16")) {
+              ReactDOM.render(
+                React.createElement(WorkingFeed, {dataType:"string", bountyNum:bountyNum}),
                 document.getElementById("dashboard")
               );
             } else {
@@ -129,7 +173,7 @@ var WorkingDashboard = React.createClass({
     if (this.state.incentAddr != "0x") {
       return React.createElement("div", {},
         React.createElement("div", {className:""}, br,
-          React.createElement(WorkingFeed, {dataType:this.state.marketDataType})
+          React.createElement(WorkingFeed, {dataType:this.state.marketDataType, bountyNum:bountyNum})
         )
       );
     }
@@ -287,6 +331,12 @@ var WorkingFeed = React.createClass({
     }
     if (this.state.jobsStillToFetch != 0)
       this.setState({jobsStillToFetch:this.state.jobsStillToFetch-=i})
+    if (this.state.jobsStillToFetch < this.props.bountyNum)
+      this.displayBounty({
+        currentTarget : {
+          id : this.props.bountyNum
+        }
+      })
   },
 
   mapJobs : function(job, key) {
