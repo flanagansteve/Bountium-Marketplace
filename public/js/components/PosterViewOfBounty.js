@@ -95,9 +95,9 @@ var Bounty = React.createClass({
       bountyInstructions,
       React.createElement("p", {}, "Completed: No"),
       React.createElement("legend", {}, "Fund this bounty to hasten its completion"),
-      React.createElement("p", {}, "Amount to send, in Ether"),
-      React.createElement("input", {id:"wei-to-send"}),
-      React.createElement("button", {className:"btn btn-primary", onClick:this.fund}, "Fund")
+      React.createElement("label", {htmlFor:"wei-to-send"}, "Amount to send, in Ether"),
+      React.createElement("input", {id:"wei-to-send", className:"form-control col-4"}),
+      React.createElement("button", {className:"btn btn-primary mt-2", onClick:this.fund}, "Fund")
     );
   }
 });

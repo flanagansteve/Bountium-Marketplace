@@ -49,7 +49,7 @@ var PostingFlow = React.createClass({
     this.pushKeyValPair("Artwork (on transparent background)", "Click edit to specify");
     this.pushKeyValPair("Image of desired shirt", "Click edit to specify");
     this.pushKeyValPair("Artwork dimensions", "Click edit to specify");
-    this.pushKeyValPair("Link to svg file of CMYK:", "Click edit to specify");
+    this.pushKeyValPair("Link to svg file of CMYK", "Click edit to specify");
     this.pushKeyValPair("Quantity", "Click edit to specify");
     this.pushKeyValPair("Size", "Click edit to specify");
     this.pushKeyValPair("Blank Information, or Link to Blank", "Click edit to specify");
