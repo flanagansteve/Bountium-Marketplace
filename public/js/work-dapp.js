@@ -182,10 +182,10 @@ var WorkingDashboard = React.createClass({
         React.createElement("h3", {}, "Find a market and get to work"),
         React.createElement("div", {},
           React.createElement("p", {}, "Example market on Ropsten at: ",
-            React.createElement("a", {href:"/work?market=" + testMarketAddr}, testMarketAddr)
+            React.createElement("a", {href:"/work/?market=" + testMarketAddr}, testMarketAddr)
           ),
           React.createElement("p", {}, "Suggested main market on Mainnet at: ",
-            React.createElement("a", {href:"/work?market=" + liveMarketAddr}, liveMarketAddr)
+            React.createElement("a", {href:"/work/?market=" + liveMarketAddr}, liveMarketAddr)
           ),
           React.createElement("label", {for:"incentiviser-addr-input"}, "Look market up by address"),
           br,
@@ -403,8 +403,8 @@ var WorkingFeed = React.createClass({
         headerText,
         React.createElement("br", {className:"d-md-none"}),
         React.createElement("a", {className:"btn btn-secondary float-right nav-item ml-auto", href:"/work/?custom"}, "Search for Custom Market"),
-        (!testMarket && React.createElement("a", {className:"btn btn-primary float-right nav-item", href:"/work?market=" + testMarketAddr}, "Go to Test Market")),
-        (!mainMarket && React.createElement("a", {className:"btn btn-info float-right nav-item", href:"/work?market=" + liveMarketAddr}, "Go to Live Market"))
+        (!testMarket && React.createElement("a", {className:"btn btn-primary float-right nav-item", href:"/work/?market=" + testMarketAddr}, "Go to Test Market")),
+        (!mainMarket && React.createElement("a", {className:"btn btn-info float-right nav-item", href:"/work/?market=" + liveMarketAddr}, "Go to Live Market"))
       ),
       hr
     );
