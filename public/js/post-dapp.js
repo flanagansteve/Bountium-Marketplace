@@ -43,13 +43,19 @@ function updateInterface() {
       React.createElement(Dashboard, {incentAddr:"0x"}, userAccount),
       document.getElementById("dashboard")
     );
-  else if (location.search.includes("market=0x"))
-    renderPostingInterface(location.search.substring(location.search.indexOf("market=") + "market=".length, location.search.indexOf("market=") + "market=".length + 42));
-  else
+    else if (location.search.includes("market=0x"))
+      if (location.search.includes("bounty="))
+        renderWorkingFeed(
+          location.search.substring(location.search.indexOf("market=") + "market=".length, location.search.indexOf("market=") + "market=".length + 42),
+          location.search.substring(location.search.indexOf("bounty=") + "bounty=".length)
+        )
+      else
+        renderWorkingFeed(location.search.substring(location.search.indexOf("market=") + "market=".length, location.search.indexOf("market=") + "market=".length + 42));
+    else
     renderPostingInterface(liveMarketAddr);
 }
 
-function renderPostingInterface(marketAddress) {
+function renderWorkingFeed(marketAddress, bountyNum = -1) {
   // presuming its a valid incent addr... TODO
   incentiviser = incentiviserABI.at(marketAddress);
   incentiviser.oracle((err, res) => {
@@ -61,7 +67,7 @@ function renderPostingInterface(marketAddress) {
         assessor.viewBountyInfo(0, (err, res) => {
           if (!err) {
             ReactDOM.render(
-              React.createElement(PostingInterface, {dataType:res[1]}),
+              React.createElement(PostingInterface, {dataType:res[1], bountyNum:bountyNum}),
               document.getElementById("dashboard")
             );
           } else {
@@ -69,7 +75,7 @@ function renderPostingInterface(marketAddress) {
             // its data type? Just presuming a string for now...
             if (err.message.includes("not a base 16")) {
               ReactDOM.render(
-                React.createElement(PostingInterface, {dataType:"string"}),
+                React.createElement(PostingInterface, {dataType:"string", bountyNum:bountyNum}),
                 document.getElementById("dashboard")
               );
             } else {
@@ -141,6 +147,11 @@ var PostingInterface = React.createClass({
         completer : "0x"
       }
     }
+  },
+
+  componentDidMount : function() {
+    if (this.props.bountyNum >= 0)
+      this.getBountyById(this.props.bountyNum)
   },
 
   undisplayBounty : function() {

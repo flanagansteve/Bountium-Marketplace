@@ -53,52 +53,7 @@ function updateInterface() {
     renderWorkingFeed(liveMarketAddr);
 }
 
-// TODO the below two functions can be consolidated into one
-function renderWorkingFeed(marketAddress) {
-  // presuming its a valid incent addr... TODO
-  incentiviser = incentiviserABI.at(marketAddress);
-  incentiviser.oracle((err, res) => {
-    if (err) {
-      console.error(err);
-    } else {
-      assessor = assessorABI.at(res);
-      try {
-        assessor.viewBountyInfo(0, (err, res) => {
-          if (!err) {
-            ReactDOM.render(
-              React.createElement(WorkingFeed, {dataType:res[1], bountyNum:-1}),
-              document.getElementById("dashboard")
-            );
-          } else {
-            // No bounties have been set for this market. TODO how, then, do we get
-            // its data type? Just presuming a string for now...
-            if (err.message.includes("not a base 16")) {
-              ReactDOM.render(
-                React.createElement(WorkingFeed, {dataType:"string", bountyNum:-1}),
-                document.getElementById("dashboard")
-              );
-            } else {
-              console.error(err);
-            }
-          }
-        });
-      } catch (err) {
-        // Log it, give an error message, and present the custom form
-        console.error(err);
-        ReactDOM.render(
-          React.createElement(ErrorMessage, {invalidAddress : err.message.includes("invalid address")}) ,
-          document.getElementById("workflow-container")
-        );
-        ReactDOM.render(
-          React.createElement(WorkingDashboard, {incentAddr:"0x"}, userAccount),
-          document.getElementById("dashboard")
-        );
-      }
-    }
-  });
-}
-
-function renderWorkingFeed(marketAddress, bountyNum) {
+function renderWorkingFeed(marketAddress, bountyNum = -1) {
   // presuming its a valid incent addr... TODO
   incentiviser = incentiviserABI.at(marketAddress);
   incentiviser.oracle((err, res) => {
