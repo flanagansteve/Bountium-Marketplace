@@ -55,7 +55,7 @@ function updateInterface() {
     renderPostingInterface(liveMarketAddr);
 }
 
-function renderWorkingFeed(marketAddress, bountyNum = -1) {
+function renderPostingInterface(marketAddress, bountyNum = -1) {
   // presuming its a valid incent addr... TODO
   incentiviser = incentiviserABI.at(marketAddress);
   incentiviser.oracle((err, res) => {
