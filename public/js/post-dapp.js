@@ -45,12 +45,12 @@ function updateInterface() {
     );
     else if (location.search.includes("market=0x"))
       if (location.search.includes("bounty="))
-        renderWorkingFeed(
+        renderPostingInterface(
           location.search.substring(location.search.indexOf("market=") + "market=".length, location.search.indexOf("market=") + "market=".length + 42),
           location.search.substring(location.search.indexOf("bounty=") + "bounty=".length)
         )
       else
-        renderWorkingFeed(location.search.substring(location.search.indexOf("market=") + "market=".length, location.search.indexOf("market=") + "market=".length + 42));
+        renderPostingInterface(location.search.substring(location.search.indexOf("market=") + "market=".length, location.search.indexOf("market=") + "market=".length + 42));
     else
     renderPostingInterface(liveMarketAddr);
 }
