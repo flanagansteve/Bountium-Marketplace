@@ -170,7 +170,7 @@ var WorkingFeed = React.createClass({
   getInitialState : function() {
     // TODO somehow determine this from the market - hardcoding as the
     // UI is developed:
-    var jstf = 40;
+    var jstf = 50;
     return {
       viewedBounty : {
         bounty : 0,
