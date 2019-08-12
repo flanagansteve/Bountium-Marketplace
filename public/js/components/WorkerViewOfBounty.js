@@ -35,7 +35,7 @@ var Bounty = React.createClass({
         dataObj = JSON.parse(bytesToString("" + this.props.bounty.bountyData));
       } catch (err) {
         console.error(err);
-        if (err.message.includes("expected")) {
+        if (err.message.includes("expected") || err.message.includes("unterminated")) {
           instructionsArr.push("The poster of this bounty has sent malformed instruction data and we can't display it well. Here is the raw instruction data:");
           instructionsArr.push(bytesToString("" + this.props.bounty.bountyData));
         }
@@ -47,7 +47,8 @@ var Bounty = React.createClass({
             if (
               dataObj[key].substr(dataObj[key].length - 4) == ".jpg" ||
               dataObj[key].substr(dataObj[key].length - 4) == ".png" ||
-              dataObj[key].substr(dataObj[key].length - 5) == ".jpeg"
+              dataObj[key].substr(dataObj[key].length - 5) == ".jpeg" ||
+              dataObj[key].substr(dataObj[key].length - 4) == ".svg"
             ) {
               imgsArr.push([key, dataObj[key]]);
             } else {

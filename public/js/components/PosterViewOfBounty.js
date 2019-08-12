@@ -48,7 +48,8 @@ var Bounty = React.createClass({
             if (
               dataObj[key].substr(dataObj[key].length - 4) == ".jpg" ||
               dataObj[key].substr(dataObj[key].length - 4) == ".png" ||
-              dataObj[key].substr(dataObj[key].length - 5) == ".jpeg"
+              dataObj[key].substr(dataObj[key].length - 5) == ".jpeg" ||
+              dataObj[key].substr(dataObj[key].length - 4) == ".svg"
             ) {
               imgsArr.push([key, dataObj[key]]);
             } else {
