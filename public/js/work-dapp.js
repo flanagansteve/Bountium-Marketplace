@@ -463,4 +463,7 @@ window.alert = function(text) {
     React.createElement(BootstrapAlert, {text:text}),
     document.getElementById("workflow-container")
   );
+  setTimeout(function(){
+    document.getElementById("to-dismiss").remove()
+  }, 5000)
 }
