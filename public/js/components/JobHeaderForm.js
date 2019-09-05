@@ -25,6 +25,7 @@ var JobHeaderForm = React.createClass({
         React.createElement("option", {value:"General"}, "General"),
         React.createElement("option", {value:"T Shirt Printing"}, "T Shirt Printing"),
         React.createElement("option", {value:"Sticker Printing"}, "Sticker Printing"),
+        React.createElement("option", {value:"3D Printing"}, "3D Printing"),
         React.createElement("option", {value:"Software Outsourcing"}, "Software Outsourcing"),
         React.createElement("option", {value:"Growth Marketing"}, "Growth Marketing"),
         React.createElement("option", {value:"Design"}, "Design"),
